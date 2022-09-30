@@ -5,8 +5,8 @@ docname: draft-tigress-latest
 category: std
 
 ipr: trust200902
-# area: ART (Applications and Real-Time Area)
-# workgroup: TIGRESS
+area: ART
+workgroup: TIGRESS
 keyword: Internet-Draft
 
 stand_alone: yes

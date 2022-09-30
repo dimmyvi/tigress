@@ -1,7 +1,7 @@
 ---
 title: "Transfer Digital Credentials Securely"
 abbrev: "Tigress"
-docname: draft-tigress-latest
+docname: draft-art-tigress-latest
 category: std
 
 ipr: trust200902

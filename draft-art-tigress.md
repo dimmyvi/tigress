@@ -12,6 +12,7 @@ keyword: Internet-Draft
 stand_alone: yes
 smart_quotes: no
 pi: [toc, sortrefs, symrefs]
+v: 3
 
 author:
  -
@@ -139,26 +140,36 @@ Relay server has finally a given pair of Sender and Receiver devices bound to th
 The stateless workflow completes the common steps described in "Credential transfer workflows" section, then finishes the transfer completing the following steps.
 Receiver device, having read the encrypted Provisioning Information from the Relay mailbox, decrypts it with the Secret received from the Sender and starts credential registering or provisioning process on the device. Once the Receiver device has successfully provisioned credentials, it deletes the mailbox by sending a DeleteMailbox call to the Relay server.
 
-~~~
-                      Sender              Relay                          Receiver
-                        |                   |                               |
-    Create mailbox with | CreateMailbox     |                               |
-    Provisioning Info   |——---------------->|                               |
-    encrypted with      |<<-.-.-.-.-.-.-.-.-|                               |
-    Secret              |URL link to mailbox|                               |
-                        |                   |                               |
-    Send URL link to    |                   |     URL link and Secret       |
-    mailbox and Secret  |-------------------------------------------------->|
-                        |                   |                               |
-                        |                   | ReadSecureContentFromMailbox  |
-                        |                   |<------------------------------|
-                        |                   |-.-.-.-.-.-.-.-.-.-.-.-.-.-.->>| Decrypt with Secret to get Prov Info
-                        |                   |         encrypted info        |
-                        |                   |                               |
-                        |                   |         DeleteMailbox         |
-                        |                   |<------------------------------| Provision or Register credentials
-                        |                   |-.-.-.-.-.-.-.-.-.-.-.-.-.-.->>|
-                        |                   |              OK               |
+
+~~~ plantuml-utxt
+participant Sender
+participant Relay
+participant Receiver
+
+note over Sender, Relay
+  Create mailbox with Provisioning Info
+  encrypted with Secret
+end note
+Sender -> Relay: CreateMailbox
+Relay -> Sender: URL link to mailbox
+
+note over Sender, Receiver
+  Send URL link to mailbox and Secret
+end note
+Sender -> Receiver: URL link and Secret
+
+Receiver -> Relay: ReadSecureContentFromMailbox
+Relay -> Receiver: Encrypted info
+note over Relay, Receiver
+  Decrypt with Secret to get Provisioning Info
+end note
+
+Receiver -> Relay: DeleteMailbox
+Relay -> Receiver: OK
+
+note over Relay, Receiver
+  Provision or Register credentials
+end note
 ~~~
 {: #stateless-flow-image title="Sample stateless workflow"}
 
@@ -177,46 +188,68 @@ Relay server, having stored the data above, sends a notification to the Receiver
 Once the Receiver device has successfully registered or provisioned credentials, it deletes the mailbox by sending a DeleteMailbox call to the Relay server.
 Sender device may terminate the secure credential transfer by deleting the mailbox it created at any time. Deletion of the mailbox on the Relay server stops any on-going credential transfer process.
 
-~~~
-                     Sender                       Relay                         Receiver
-                       |                             |                             |
-    Create and encrypt |       CreateMailbox         |                             |
-    Provisioning Info 1|---------------------------->|                             |
-    encrypted with     |<<-.-.-.-.-.-.-.-.-.-.-.-.-.-|                             |
-    Secret             |    URL link to mailbox      |                             |
-                       |                             |                             |
-                       |                             |    URL link and Secret      |
-    Send URL link to   |---------------------------------------------------------->|
-    mailbox and Secret |                             |                             |
-                       |                             |ReadSecureContentFromMailbox |
-                       |                             |<----------------------------|
-                       |                             |-.-.-.-.-.-.-.-.-.-.-.-.-.->>| Decrypt with Secret for ProvInfo1
-                       |                             |       encrypted info        |
-                       |                             |                             |
-                       |                             |UpdateMailbox(encrypted info)| Update with ProvInfo2
-                       |                             |<----------------------------| encrypted with Secret
-                       |   Push Notification         |-.-.-.-.-.-.-.-.-.-.-.-.-.->>| ProvInfo2 = new Provisioning Info
-                       |<............................|             OK              |
-                       |                             |                             |
-                       |ReadSecureContentFromMailbox |                             |
-                       |---------------------------->|                             |
-   Decrypt with Secret |<<-.-.-.-.-.-.-.-.-.-.-.-.-.-|                             |
-   to get ProvInfo2    |       encrypted info        |                             |
-                       |                             |                             |
-                       |UpdateMailbox(encrypted info)|                             |
-   Update with         |—-----------—--------------->|                             |
-   ProvInfo3 encrypted |<<-.-.-.-.-.-.-.-.-.-.-.-.-.-|  Push Notification          |
-   with Secret.        |             OK              |............................>|
-   ProvInfo3 = new     |                             |                             |
-   Provisioning Info   |                             |ReadSecureContentFromMailbox |
-                       |                             |<----------------------------|
-                       |                             |-.-.-.-.-.-.-.-.-.-.-.-.-.->>| Decrypt with Secret for ProvInfo3
-                       |                             |        encrypted info       |
-                       |                             |                             |
-                       |                             |        DeleteMailbox        |
-                       |                             |<----------------------------| Provision or Register credentials
-                       |                             |-.-.-.-.-.-.-.-.-.-.-.-.-.->>|
-                       |                             |             OK              |
+~~~ plantuml-utxt
+participant Sender
+participant Relay
+participant Receiver
+
+note over Sender, Relay
+  Create and encrypt Provisioning
+  Info 1 encrypted with Secret
+end note
+Sender -> Relay: CreateMailbox
+
+Relay -> Sender: URL link to mailbox
+
+note over Sender, Receiver
+  Send URL link to mailbox and Secret
+end note
+Sender -> Receiver: URL link and Secret
+
+Receiver -> Relay: ReadSecureContentFromMailbox
+note over Relay, Receiver
+  Decrypt with Secret to get Provisioning Info 1
+end note
+Relay -> Receiver: encrypted info
+
+
+note over Relay, Receiver
+  Update with Provision Info 2
+  encrypted with Secret
+  Provision Info 2 = new Provisioning Info
+end note
+Receiver -> Relay: UpdateMailbox(encrypted info)
+Relay -> Receiver: OK
+
+Relay -> Sender: Push Notification
+
+Sender -> Relay: ReadSecureContentFromMailbox
+Relay -> Sender: encrypted info
+note over Sender, Relay
+  Decrypt with Secret to get Provision Info 2
+end note
+
+note over Sender, Relay
+  Update with Provision Info 3
+  encrypted with Secret
+  Provision Info 3 = new Provisioning Info
+end note
+Sender -> Relay: UpdateMailbox(encrypted info)
+Relay -> Sender: OK
+
+Relay -> Receiver: Push Notification
+Receiver -> Relay: ReadSecureContentFromMailbox
+Relay -> Receiver: encrypted info
+note over Relay, Receiver
+  Decrypt with Secret for Provision Info 3
+end note
+
+Receiver -> Relay: DeleteMailbox
+Relay -> Receiver: OK
+
+note over Relay, Receiver
+  Provision or Register credentials
+end note
 ~~~
 {: #stateful-flow-image title="Sample stateful workflow"}
 

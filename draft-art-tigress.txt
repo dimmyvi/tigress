@@ -5,11 +5,11 @@
 TIGRESS                                                     D. Vinokurov
 Internet-Draft                                               M. Byington
 Intended status: Standards Track                                M. Lerch
-Expires: 13 May 2023                                        A. Pelletier
+Expires: 14 July 2023                                       A. Pelletier
                                                                Apple Inc
                                                                   N. Sha
                                                             Alphabet Inc
-                                                         9 November 2022
+                                                         10 January 2023
 
 
                  Transfer Digital Credentials Securely
@@ -48,11 +48,11 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 13 May 2023.
+   This Internet-Draft will expire on 14 July 2023.
 
 Copyright Notice
 
-   Copyright (c) 2022 IETF Trust and the persons identified as the
+   Copyright (c) 2023 IETF Trust and the persons identified as the
    document authors.  All rights reserved.
 
    This document is subject to BCP 78 and the IETF Trust's Legal
@@ -290,27 +290,47 @@ Table of Contents
    device has successfully provisioned credentials, it deletes the
    mailbox by sending a DeleteMailbox call to the Relay server.
 
-                      Sender              Relay                          Receiver
-                        |                   |                               |
-    Create mailbox with | CreateMailbox     |                               |
-    Provisioning Info   |——---------------->|                               |
-    encrypted with      |<<-.-.-.-.-.-.-.-.-|                               |
-    Secret              |URL link to mailbox|                               |
-                        |                   |                               |
-    Send URL link to    |                   |     URL link and Secret       |
-    mailbox and Secret  |-------------------------------------------------->|
-                        |                   |                               |
-                        |                   | ReadSecureContentFromMailbox  |
-                        |                   |<------------------------------|
-                        |                   |-.-.-.-.-.-.-.-.-.-.-.-.-.-.->>| Decrypt with Secret to get Prov Info
-                        |                   |         encrypted info        |
-                        |                   |                               |
-                        |                   |         DeleteMailbox         |
-                        |                   |<------------------------------| Provision or Register credentials
-                        |                   |-.-.-.-.-.-.-.-.-.-.-.-.-.-.->>|
-                        |                   |              OK               |
+        ┌──────┐             ┌─────┐                      ┌────────┐
+        │Sender│             │Relay│                      │Receiver│
+        └──┬───┘             └──┬──┘                      └───┬────┘
+   ╔═══════╧════════════════════╧══════════╗                  │
+   ║Create mailbox with Provisioning Info ░║                  │
+   ║encrypted with Secret                  ║                  │
+   ╚═══════╤════════════════════╤══════════╝                  │
+           │    CreateMailbox   │                             │
+           │ ───────────────────>                             │
+           │                    │                             │
+           │ URL link to mailbox│                             │
+           │ <───────────────────                             │
+           │                    │                             │
+       ╔═══╧════════════════════╧═════════════════════════════╧═════╗
+       ║Send URL link to mailbox and Secret                        ░║
+       ╚═══╤════════════════════╤═════════════════════════════╤═════╝
+           │                URL link and Secret               │
+           │ ─────────────────────────────────────────────────>
+           │                    │                             │
+           │                    │ ReadSecureContentFromMailbox│
+           │                    │ <────────────────────────────
+           │                    │                             │
+           │                    │        Encrypted info       │
+           │                    │ ────────────────────────────>
+           │                    │                             │
+           │            ╔═══════╧═════════════════════════════╧════════╗
+           │            ║Decrypt with Secret to get Provisioning Info ░║
+           │            ╚═══════╤═════════════════════════════╤════════╝
+           │                    │        DeleteMailbox        │
+           │                    │ <────────────────────────────
+           │                    │                             │
+           │                    │              OK             │
+           │                    │ ────────────────────────────>
+           │                    │                             │
+           │                ╔═══╧═════════════════════════════╧════╗
+           │                ║Provision or Register credentials    ░║
+        ┌──┴───┐            ╚══════════════════════════════════════╝
+        │Sender│             │Relay│                      │Receiver│
+        └──────┘             └─────┘                      └────────┘
 
-                 Figure 1: Sample stateless workflow
+                  Figure 1: Sample stateless workflow
 
 3.2.  Stateful workflow
 
@@ -351,45 +371,91 @@ Table of Contents
    Deletion of the mailbox on the Relay server stops any on-going
    credential transfer process.
 
-                     Sender                       Relay                         Receiver
-                       |                             |                             |
-    Create and encrypt |       CreateMailbox         |                             |
-    Provisioning Info 1|---------------------------->|                             |
-    encrypted with     |<<-.-.-.-.-.-.-.-.-.-.-.-.-.-|                             |
-    Secret             |    URL link to mailbox      |                             |
-                       |                             |                             |
-                       |                             |    URL link and Secret      |
-    Send URL link to   |---------------------------------------------------------->|
-    mailbox and Secret |                             |                             |
-                       |                             |ReadSecureContentFromMailbox |
-                       |                             |<----------------------------|
-                       |                             |-.-.-.-.-.-.-.-.-.-.-.-.-.->>| Decrypt with Secret for ProvInfo1
-                       |                             |       encrypted info        |
-                       |                             |                             |
-                       |                             |UpdateMailbox(encrypted info)| Update with ProvInfo2
-                       |                             |<----------------------------| encrypted with Secret
-                       |   Push Notification         |-.-.-.-.-.-.-.-.-.-.-.-.-.->>| ProvInfo2 = new Provisioning Info
-                       |<............................|             OK              |
-                       |                             |                             |
-                       |ReadSecureContentFromMailbox |                             |
-                       |---------------------------->|                             |
-   Decrypt with Secret |<<-.-.-.-.-.-.-.-.-.-.-.-.-.-|                             |
-   to get ProvInfo2    |       encrypted info        |                             |
-                       |                             |                             |
-                       |UpdateMailbox(encrypted info)|                             |
-   Update with         |—-----------—--------------->|                             |
-   ProvInfo3 encrypted |<<-.-.-.-.-.-.-.-.-.-.-.-.-.-|  Push Notification          |
-   with Secret.        |             OK              |............................>|
-   ProvInfo3 = new     |                             |                             |
-   Provisioning Info   |                             |ReadSecureContentFromMailbox |
-                       |                             |<----------------------------|
-                       |                             |-.-.-.-.-.-.-.-.-.-.-.-.-.->>| Decrypt with Secret for ProvInfo3
-                       |                             |        encrypted info       |
-                       |                             |                             |
-                       |                             |        DeleteMailbox        |
-                       |                             |<----------------------------| Provision or Register credentials
-                       |                             |-.-.-.-.-.-.-.-.-.-.-.-.-.->>|
-                       |                             |             OK              |
+     ┌──────┐                       ┌─────┐                       ┌────────┐
+     │Sender│                       │Relay│                       │Receiver│
+     └──┬───┘                       └──┬──┘                       └───┬────┘
+    ╔═══╧══════════════════════════════╧═══╗                          │
+    ║Create and encrypt Provisioning      ░║                          │
+    ║Info 1 encrypted with Secret          ║                          │
+    ╚═══╤══════════════════════════════╤═══╝                          │
+        │         CreateMailbox        │                              │
+        │ ─────────────────────────────>                              │
+        │                              │                              │
+        │      URL link to mailbox     │                              │
+        │ <─────────────────────────────                              │
+        │                              │                              │
+    ╔═══╧══════════════════════════════╧══════════════════════════════╧═════╗
+    ║Send URL link to mailbox and Secret                                   ░║
+    ╚═══╤══════════════════════════════╤══════════════════════════════╤═════╝
+        │                     URL link and Secret                     │
+        │ ────────────────────────────────────────────────────────────>
+        │                              │                              │
+        │                              │ ReadSecureContentFromMailbox │
+        │                              │ <─────────────────────────────
+        │                              │                              │
+        │                      ╔═══════╧══════════════════════════════╧═════════╗
+        │                      ║Decrypt with Secret to get Provisioning Info 1 ░║
+        │                      ╚═══════╤══════════════════════════════╤═════════╝
+        │                              │        encrypted info        │
+        │                              │ ─────────────────────────────>
+        │                              │                              │
+        │                         ╔════╧══════════════════════════════╧══════╗
+        │                         ║Update with Provision Info 2             ░║
+        │                         ║encrypted with Secret                     ║
+        │                         ║Provision Info 2 = new Provisioning Info  ║
+        │                         ╚════╤══════════════════════════════╤══════╝
+        │                              │ UpdateMailbox(encrypted info)│
+        │                              │ <─────────────────────────────
+        │                              │                              │
+        │                              │              OK              │
+        │                              │ ─────────────────────────────>
+        │                              │                              │
+        │       Push Notification      │                              │
+        │ <─────────────────────────────                              │
+        │                              │                              │
+        │ ReadSecureContentFromMailbox │                              │
+        │ ─────────────────────────────>                              │
+        │                              │                              │
+        │        encrypted info        │                              │
+        │ <─────────────────────────────                              │
+        │                              │                              │
+  ╔═════╧══════════════════════════════╧════════╗                     │
+  ║Decrypt with Secret to get Provision Info 2 ░║                     │
+  ╚═════╤══════════════════════════════╤════════╝                     │
+   ╔════╧══════════════════════════════╧══════╗                       │
+   ║Update with Provision Info 3             ░║                       │
+   ║encrypted with Secret                     ║                       │
+   ║Provision Info 3 = new Provisioning Info  ║                       │
+   ╚════╤══════════════════════════════╤══════╝                       │
+        │ UpdateMailbox(encrypted info)│                              │
+        │ ─────────────────────────────>                              │
+        │                              │                              │
+        │              OK              │                              │
+        │ <─────────────────────────────                              │
+        │                              │                              │
+        │                              │       Push Notification      │
+        │                              │ ─────────────────────────────>
+        │                              │                              │
+        │                              │ ReadSecureContentFromMailbox │
+        │                              │ <─────────────────────────────
+        │                              │                              │
+        │                              │        encrypted info        │
+        │                              │ ─────────────────────────────>
+        │                              │                              │
+        │                         ╔════╧══════════════════════════════╧══════╗
+        │                         ║Decrypt with Secret for Provision Info 3 ░║
+        │                         ╚════╤══════════════════════════════╤══════╝
+        │                              │         DeleteMailbox        │
+        │                              │ <─────────────────────────────
+        │                              │                              │
+        │                              │              OK              │
+        │                              │ ─────────────────────────────>
+        │                              │                              │
+        │                          ╔═══╧══════════════════════════════╧════╗
+        │                          ║Provision or Register credentials     ░║
+     ┌──┴───┐                      ╚═══════════════════════════════════════╝
+     │Sender│                       │Relay│                       │Receiver│
+     └──────┘                       └─────┘                       └────────┘
 
                   Figure 2: Sample stateful workflow
 

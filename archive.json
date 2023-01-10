@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2023-01-08T00:40:56.474877+00:00",
+  "timestamp": "2023-01-10T00:42:16.301735+00:00",
   "repo": "dimmyvi/tigress",
   "labels": [
     {
@@ -160,13 +160,13 @@
       "labels": [],
       "body": "Convert the sequence diagrams to plantuml",
       "createdAt": "2022-12-29T17:01:20Z",
-      "updatedAt": "2023-01-06T14:52:25Z",
+      "updatedAt": "2023-01-10T00:40:54Z",
       "baseRepository": "dimmyvi/tigress",
       "baseRefName": "main",
       "baseRefOid": "f0b1d93535dfb898a8f151072d8f49f9e12e2e70",
       "headRepository": "snorp/tigress",
       "headRefName": "plantuml",
-      "headRefOid": "c066a2b4e8a43166d7b130d96ab57dcb151e39fc",
+      "headRefOid": "77cbf8875546f7c5086aac5444718521b323b797",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -234,6 +234,48 @@
           "body": "![Screenshot 2023-01-06 8 48 04 AM](https://user-images.githubusercontent.com/31482/211036132-39a24c81-5d5e-4247-b92e-dedf7ade2ec2.png)\r\n",
           "createdAt": "2023-01-06T14:50:39Z",
           "updatedAt": "2023-01-06T14:50:39Z"
+        },
+        {
+          "author": "dimmyvi",
+          "authorAssociation": "OWNER",
+          "body": "xml2rfc fails with the new diagram: https://github.com/dimmyvi/tigress/actions/runs/3856131963/jobs/6612919761\r\nI had similar issue when I tried to insert an svg image to the doc",
+          "createdAt": "2023-01-09T20:55:03Z",
+          "updatedAt": "2023-01-09T20:55:03Z"
+        },
+        {
+          "author": "snorp",
+          "authorAssociation": "NONE",
+          "body": "Ah, it seems I screwed up the `plantuml` installation stuff, as the `lint` rule (obviously, in retrospect) does not run before the xml generation. @martinthomson , I think I need to add stuff to the `deps` target, right? Or add things to `DEPS_FILES`? The latter didn't work for me, but the former did with this PR https://github.com/martinthomson/i-d-template/pull/360",
+          "createdAt": "2023-01-09T21:23:31Z",
+          "updatedAt": "2023-01-09T21:23:31Z"
+        },
+        {
+          "author": "martinthomson",
+          "authorAssociation": "NONE",
+          "body": "I've improved documentation for adding dependencies in https://github.com/martinthomson/i-d-template/commit/52201af9fef3bb9c00a06caa16494b1854eec4d3",
+          "createdAt": "2023-01-09T22:50:48Z",
+          "updatedAt": "2023-01-09T22:50:48Z"
+        },
+        {
+          "author": "snorp",
+          "authorAssociation": "NONE",
+          "body": "@martinthomson sorry for being dense, but that still doesn't seem to be working for me -- latest attempt in [77cbf8875546f7c5086aac5444718521b323b797](https://github.com/dimmyvi/tigress/commit/77cbf8875546f7c5086aac5444718521b323b797)",
+          "createdAt": "2023-01-10T00:11:47Z",
+          "updatedAt": "2023-01-10T00:11:47Z"
+        },
+        {
+          "author": "martinthomson",
+          "authorAssociation": "NONE",
+          "body": "The action isn't running (maybe because @dimmyvi) hasn't approved.  So no evidence that it works (or not).\r\n\r\nHmm, that looks basically fine to me in structure. The catch is that the image that this runs within for CI runs is not the default GitHub CI image, but one that I maintain.  That uses alpine, not ubuntu.  So for CI you need `apk add --no-cache plantuml` instead of `apt-get install`.",
+          "createdAt": "2023-01-10T00:21:59Z",
+          "updatedAt": "2023-01-10T00:21:59Z"
+        },
+        {
+          "author": "martinthomson",
+          "authorAssociation": "NONE",
+          "body": "I've added a few more pointers to the documentation.",
+          "createdAt": "2023-01-10T00:40:53Z",
+          "updatedAt": "2023-01-10T00:40:53Z"
         }
       ],
       "reviews": []

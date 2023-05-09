@@ -5,9 +5,18 @@ docname: draft-art-tigress-latest
 category: std
 
 ipr: trust200902
-area: ART
-workgroup: TIGRESS
-keyword: Internet-Draft
+area: "Applications and Real-Time"
+workgroup: "Transfer dIGital cREdentialS Securely"
+keyword:
+ - tigress
+ - requirements
+venue:
+  group: "Transfer dIGital cREdentialS Securely"
+  type: "Working Group"
+  mail: "tigress@ietf.org"
+  arch: "https://mailarchive.ietf.org/arch/browse/tigress/"
+  github: "dimmyvi/tigress"
+  latest: "https://datatracker.ietf.org/doc/draft-art-tigress/"
 
 stand_alone: yes
 smart_quotes: no
@@ -59,7 +68,27 @@ normative:
     target: https://www.iso.org/standard/69084.html
 
 informative:
+  Tigress-req-03:
+    author:
+    -
+      ins: D. Vinokurov
+      name: Dmitry Vinokurov
+    -
+      ins: A. Pelletier
+      name: Alex Pelletier
+    -
+      ins: C. Astiz
+      name: Casey Astiz
+    -
+      ins: B Lassey
+      name: Brad Lassey
+    -
+      ins: Y. Karandikar
+      name: Yogesh Karandikar
 
+    title: "Tigress requirements"
+    date: 2023-04
+    target: https://github.com/dimmyvi/tigress-requirements/
 
 --- abstract
 

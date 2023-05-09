@@ -2,6 +2,7 @@
 title: "Transfer Digital Credentials Securely"
 abbrev: "Tigress"
 docname: draft-art-tigress-latest
+submissiontype: IETF
 category: std
 
 ipr: trust200902

@@ -31,10 +31,10 @@ author:
     organization: Apple Inc
     email: dvinokurov@apple.com
  -
-    ins: M. Byington
-    name: Matt Byington
+    ins: Y. Karandikar
+    name: Yogesh Karandikar
     organization: Apple Inc
-    email: mbyington@apple.com
+    email: ykarandikar@apple.com
  -
     ins: M. Lerch
     name: Matthias Lerch
@@ -71,21 +71,22 @@ normative:
 informative:
   Tigress-req-03:
     author:
-    -
+     -
       ins: D. Vinokurov
       name: Dmitry Vinokurov
-    -
+     -
       ins: A. Pelletier
       name: Alex Pelletier
-    -
+     -
       ins: C. Astiz
       name: Casey Astiz
-    -
-      ins: B Lassey
-      name: Brad Lassey
-    -
+     -
       ins: Y. Karandikar
       name: Yogesh Karandikar
+     -
+      ins: B Lassey
+      name: Brad Lassey
+
 
     title: "Tigress requirements"
     date: 2023-04
@@ -93,203 +94,182 @@ informative:
 
 --- abstract
 
-This document describes a mechanism to transfer digital credentials securely between two devices.
-Secure credentials may represent a digital key to a hotel room, a digital key to a door lock in a house
-or a digital key to a car. Devices that share credentials may belong to the same or two different platforms (e.g. iOS and Android).
-Secure transfer may include one or more write and read operations.
-Credential transfer needs to be performed securely due to the sensitive nature of the information.
+Digital Credentials allow users to access properties like Cars or Hotels using their mobile devices. Once a user has a Credential on a device, sharing it to others is a natural use case. This document describes a sharing flow that allows an intuitive and seamless user experience, similar to sharing other digital assets like photos or documents. The sharing process should be secure and privacy preserving. This document also defines a new transport to meet unique requirements of sharing a Credential.
 
 --- middle
 
 # Introduction
 
-Today, there is no standard way of transferring digital credentials securely between two devices
-belonging to the same platform or two different platforms. This document proposes a solution to this problem
-by introducing a Relay server which allows two devices to exchange encrypted Provisioning Information securely.
-The Relay server solves this problem by creating and managing temporary mailbox storage.
+Mobile devices with ever increasing computational power and security capabilities are enabling various use cases. One such category includes use of mobile devices to gain access to a property that a user owns or rents or is granted access to. The cryptographic material and other data required to enable this use case is termed as Digital Credential. The process of getting a Digital Credential on a mobile device is termed as Provisioning.
 
-Each mailbox can be referenced by devices using a unique mailbox identifier in a URL.
-The URL pointing to encrypted Provisioning Information is to be passed between devices directly
-over various channels (e.g. SMS, email, messaging applications).
-The Security Considerations section provides recommendations on passing the URL and the Secret securely.
+Based on type of property, different public or proprieatary standards (termed as Verticals) govern details of Digital Credentials used to access them. These details include policies, mechanism and practices to create, maintain and use Digital Credentials and vary considerably across Verticals.
 
-This document describes a Hypertext (HTTP) Application Programming Interface (API) that allows
-Sender and Receiver devices to interact with a Relay server in order to perform secure credential transfer.
+Once a user has a Digital Credential for some Vertical provisioned on their mobile device, next natural use case is to share it with others. Sharing a Credential should feel like a natural extension of regular communication methods (like instant messaging, sms, email). The user experience of sharing a Credential should be intuitive, similar to sharing other digital assets like photos or documents. The sharing process should be secure and privacy preserving.
+
+Credentials pose two requirements that differ from sharing other digital assets. The Initiator and Recipient devices may need to communicate back and forth to get the necessary Provisioning Information. The Provisioning information exchange must be limited to Initiator device and the first Recipient device to claim the information.
+
+To achive these goals, a new transport is necessary. This documents describes a Hypertext (HTTP) Application Programming Interface (API) to create such a transport termed as Relay Server. The document also defines JSON based data to enable a uniform user experience for securely sharing Digital Credentials of various types.
 
 
-# Terminology
+# Coventions & Definitions
 
 {::boilerplate bcp14-tagged}
 
-General terms:
+## General Terms
+- Digital Credential (or simply Credential) - Cryptographic material and other data used to authorize User with an access point. The cryptographic material can also be used for mutual authentication between user device and access point.
+- Digital Credential Vertical (or simply Vertical) - The public or propriatary standards that that define details of Digital Credentials for type of property accessed. The details include policy, process and mechanism to create, maintain and use Digital Credentials in the given Vertical.
+- Provisioning - A process of adding a new Digital Credential to the device.
+- Provisioning Entity - An entity that facilitates creation, update and termination (Lifecycle Management) of the Credential. Based on Vertical, the role of Provisioning Entity may be played by various actors in various stages of Credential lifecycle.
+- Provisioning Information - data transferred from Initiator to Recipient that is both necessary and sufficient for the Recipient to Provision a Credential.
+- Initiator - User and their device initiating a transfer of Provisioning Information to a Recipient.
+- Recipient - User and their device that receives Provisioning Information and uses it to provision a new Credential.
+- Relay Server - an intermediary server that provides a standardized and platform-independent way of transferring Provisioning Information between Initiator and Recipient, acting as a temporary store and forward service.
+- Secret - a symmetric encryption key shared between an Initiator and Recipient device. It is used to encrypt Provisioning Information stored on the Relay server.
 
-- Relay Server - Web application exposing Tigress API to devices. It serves to securely transfer Provisioning Information between two devices (Sender and Receiver).
 
-- Sender device - a device initiating a transfer of Provisioning Information to a Receiver device so that Receiver can register or provision this credential.
+# Overview of Sharing Process
 
-- Receiver device - a device that receives Provisioning Information from Sender device and uses it to register or provision Credential Information.
+## Some Example Use Cases
 
-- Provisioning Partner - an entity which facilitates Credential Information lifecycle on a device. Lifecycle may include provisioning of credential, credential termination, credential update. API to Provisioning Partner is out of scope for this document.
+- Amit owns a car that supports Digital Credentials. Being a tech enthusiast, he has the Credential provisioned on his mobile device. He can now use his mobile device to lock/unlock and operate the car. One Monday he is out of town and realizes that his car needs to be moved for street cleaning. He asks his neighbor Bob for help via their favorite instant messaging method. As Bob agress, Amit shares the Digital Credential to Bob via the next instant message. Bob accepts the Credential and uses his mobile device to unlock Amit's car and drive it to other side of street.
 
-- Provisioning Information - a set of data fields, allowing a device to generate Credential Information or receive it from Provisioning Partner and install it locally. The entire content of Provisioning Information is encrypted by Sender or Receiver device. Therefore, it is not visible to the Relay Server.
-The structure of Provisioning Information is specific to Provisioning Partner or type of Credential and out of the scope of this document.
+- Alice booked a room at a hotel that supports Digital Credentials. She being a frequent traveller has the Digital Credential provisioned on her mobile devices. As her flight gets delayed, she realizes that her partner Bakari will reach the hotel first. So she shares the Digital Credential with him over email. Bakari sees the email after his flight lands and he accepts the Credential. On reaching the hotel. Bakari is able to access common areas and their room using his mobile devices.
 
-- Credential Information - a set of data fields used to facilitate registration or provisioning of Credential Information on the Receiver's device.
 
-- Secret - a symmetric encryption key shared by a pair of Sender and Receiver devices, used to encrypt Provisioning Information stored on the Relay server. Secret stays the same for the entire credential transfer flow (one Secret per complete transfer). Provisioning Information stored on Relay server is always encrypted using the Secret. In Stateful flow all information exchanged by Sender and Receiver devices through Relay server is encrypted with the same Secret. Thus, effectively, Secret has a one-to-one relation with the mailbox.
+## Credential Sharing Flow
 
-- Credential Vertical - The broad industry vertical that the credential belongs to. For example, the credential could belong to the car or home vertical.
+A simplified sharing flow is shown in the sequence diagram. Initiator User instructs their device to share a Credential over their preferred communication method. Recipient User accepts the Credential share. Then the two devices go back and forth as necessary to transfer Provisioning Information. After the Provisioning Information transfer is complete Recipient device gets the Credential Provisioned.
 
-API parameters:
 
-- Device Claim - a unique token allowing the caller to read from / write data to the mailbox. Exactly one Sender device and one Receiver device SHOULD be able to read from / write secure payload to the mailbox. Sender device provides a Device Claim in order to create a mailbox. When the Relay server, having received a request from the Sender device, creates a mailbox, it binds this Sender's Device Claim to the mailbox. When the Receiver device first reads data from the mailbox it presents its Device Claim to the Relay Server, which binds the mailbox to the given Receiver device. Thus, both Sender and Receiver devices are bound to the mailbox (allowed to read from / write to it). Only Sender and Receiver devices that present valid Device Claims are allowed to send subsequent read/update/delete calls to the mailbox. The value SHALL be a unique UUID {{!RFC4122}}. Sender and Receiver MUST use different values for Device Claim. Implementation SHOULD assign unique values for new mailboxes (avoid re-using values).
 
-- Notification Token - a short or long-lived unique token stored by the Sender or Receiver device in a mailbox on the Relay server, which allows Relay server to send a push notification to the Sender or Receiver device, informing them of updates in the mailbox.
+~~~ plantuml-utxt
+actor "Initiator User" as initPerson
+participant "Initiator Device" as ID
+participant "Relay Server" as RS
+participant "Recipient Device" as RD
+actor "Recipient User" as recPerson
+
+initPerson -> ID: Initiate Credential Share
+ID -> RS: upload Provisioning Information
+ID -> RD: Invitation to accept Credential\n over IM, sms, email etc
+recPerson -> RD : accept the Credential
+RD -> RS: request Provisioning Information
+RS -> RD: deliver Provisioning Information
+loop Additional Data if Required
+  RD -> RS: additional data request
+  RS -> ID: Forward request
+  ID -> RS: additional data response
+  RS -> RD: forward response
+end
+~~~
+
+
+## Things to note
+- Initiator User and Recipient user may not be online at the same time.
+- Users can pick any communication method for delivering invitation. Most communication methods have a goal to provide secure and private communication, but those properties can be taken for granted.
+- Once a Recipient User accepts the Invitation from a device, only that Recipient device SHALL get the Provisioning Information.
+- Verticals may define a second factor to authenticate a Digital Credential Provisioned via sharing. The mechanisms and policies around the second factor are Vertical dependent and out of scope of this design.
+
+
+# Design Details
+
+
+- Initiator device composes Provisioning Information and encrypts it with a Secret before storing it in a mailbox on Relay Server
+- Initiator Device calls CreateMailbox API endpoint on a Relay server in order to create a mailbox. A unique Mailbox Identifier is generated by the Relay server using a good source of entropy (preferably hardware-based entropy).
+- Initiator device generates a unique token - an Initiator Device Claim - and stores it to the mailbox. Device Claim allows the Initiator Device presenting it to read and write data to / from the mailbox, thus binding it to the mailbox.
+- A mailbox has limited lifetime configured with mandatory "expiration" parameter in mailboxConfiguration. When expired, the mailbox SHALL be deleted - refer to DeleteMailbox endpoint.  Relay server SHALL be responsible to periodically check for mailboxes that are past the expiration time and delete them.
+- Relay server builds a unique URL link to a mailbox (for example, “https://relayserver.example.com/v1/m/1234567890”) and returns it to the Initiator Device. This link is sent as invitation to Recipient Device over communication method preferred by users.
+- Recipient Device, having obtained both the URL link and the Secret, is ready to read the mailbox upon user action. It generates a unique token - a Recipient Device Claim - and presents it to the Relay server to read the mailbox. The Recipient Device Claim binds the Recipient device to the mailbox.
+- Relay server only allows bound devices to read or write data to the mailbox or to delete the mailbox. Note that a Relay Server may host multiple mailboxes at the same time, each bound to various pairs of Initiator and Recipient Devices. Relay Server SHALL not be able to relate the devices across various mailboxes.
+- Initiator Device or Recipient Device may delete the mailbox using the DeleteMailbox API call.
+- Initiator and Recipient Devices can also deposit an optional notification token for the mailbox with the Relay Server. Relay Server can notify Initiator and Recipient devices when other side has deposited data in mailbox that is ready to be read. This improves user experience over polling mechanism that the devices would have to use otherwise.
+
+
+~~~ plantuml-utxt
+actor "Initiator User" as initUser
+participant "Initiator Device" as Initiator
+participant "Relay Server" as Relay
+participant "Recipient Device" as Recipient
+actor "Recipient User" as recUser
+
+initUser -> Initiator : Share this Credential with Recipient User\n over communication method m_1
+
+note over Initiator
+  Create and encrypt Provisioning
+  Info message_1 encrypted with Secret
+end note
+Initiator -> Relay: CreateMailbox \n(With DeviceClaim and Notification token)
+
+Relay -> Initiator: URL link to mailbox
+
+Initiator -> Recipient: URL link and Secret \n over preferred communication method m_1
+
+recUser -> Recipient : Accept the Credential
+
+Recipient -> Relay: ReadSecureContentFromMailbox \n (With DeviceClaim)
+Relay -> Recipient: encrypted info
+
+note over Recipient
+  Decrypt with Secret to get Provisioning Info message_1
+end note
+
+
+note over Recipient
+  Generate Provision Info message_2
+  encrypted with Secret
+end note
+Recipient -> Relay: UpdateMailbox(encrypted info)
+Relay -> Recipient: OK
+
+Relay -> Initiator: Push Notification
+
+Initiator -> Relay: ReadSecureContentFromMailbox
+Relay -> Initiator: encrypted info
+note over Initiator
+  Decrypt with Secret to get Provision Info message_2
+end note
+
+note over Initiator
+  Update with Provision Info message_3
+  encrypted with Secret
+end note
+
+Initiator -> Relay: UpdateMailbox(encrypted info)
+Relay -> Initiator: OK
+
+Relay -> Recipient: Push Notification
+Recipient -> Relay: ReadSecureContentFromMailbox
+Relay -> Recipient: encrypted info
+
+note over Relay, Recipient
+  Decrypt with Secret for Provision Info message_3
+end note
+
+Recipient -> Relay: DeleteMailbox
+Relay -> Recipient: OK
+
+note over Recipient
+  Finish Credential Provisioning
+end note
+~~~
+
+
+## API parameters:
+
+- Device Claim - a unique token allowing the caller to read from / write data to the mailbox. Exactly one Initiator Device and one Recipient Device SHOULD be able to read from / write secure payload to the mailbox. Initiator Device provides a Device Claim in order to create a mailbox. When the Relay server, having received a request from the Initiator Device, creates a mailbox, it binds this Initiator's Device Claim to the mailbox. When the Recipient Device first reads data from the mailbox it presents its Device Claim to the Relay Server, which binds the mailbox to the given Recipient Device. Thus, both Initiator and Recipient devices are bound to the mailbox (allowed to read from / write to it). Only Initiator and Recipient devices that present valid Device Claims are allowed to send subsequent read/update/delete calls to the mailbox. The value SHALL be a unique UUID {{!RFC4122}}. Initiator and Recipient MUST use different values for Device Claim. Implementation SHOULD assign unique values for new mailboxes (avoid re-using values).
+
+- Notification Token - a short or long-lived unique token stored by the Initiator or Recipient Device in a mailbox on the Relay server, which allows Relay server to send a push notification to the Initiator or Recipient Device, informing them of updates in the mailbox.
 
 - MailboxIdentifier - a unique identifier for the given mailbox, generated by the Relay server at the time of mailbox creation. The value is a UUID {{!RFC4122}}.
 
-# Credential transfer workflows
-
-We define two flows for credential transfer: 1. Stateless (Relay server facilitates a single credential data transfer: Sender -> Relay -> Receiver) and 2. Stateful (Relay server facilitates additional data transfers - there are multiple data transfers in this flow to prepare credential data for registering or provisioning by Receiver). Relay server does not limit the number of such data tranfsfers between Sender and Receiver devices. The details are provided below.
-
-Both stateless and stateful share the following common steps.
-The processes start with a Sender device composing a set of Provisioning Information, encrypting it with a Secret and storing encrypted Provisioning Information on a Relay server in a mailbox. A unique Mailbox Identifier is generated by the Relay server as a part of CreateMailbox call, created using a good source of entropy (preferably hardware-based entropy). Sender device generates a unique token - a Sender Device Claim - and stores it to the mailbox. Device Claim allows the Sender device presenting it to read and write data to / from the mailbox, thus binding it to the mailbox.
-
-Sender device calls CreateMailbox API endpoint on a Relay server in order to create a mailbox.
-Once a mailbox is created, it has limited livetime. When expired, the mailbox SHALL be deleted - refer to DeleteMailbox endpoint. Mailbox configuration has a required "expiration" parameter in the request for the CreateMailbox call (refer to mailboxConfiguration request parameter). Relay server is responsible to periodically check for mailboxes that are past the expiration time and delete them.
-
-Relay server builds a unique URL link to a mailbox (for example, “https://relayserver.example.com/v1/m/1234567890”) and returns it to the Sender device, which sends the link directly to the Receiver device over communication channel (e.g. SMS, email, iMessage).
-Please refer to section "Security Considerations" for more details.
-
-Receiver device, having obtained both the URL link and the Secret, generates a unique token - a Receiver Device Claim - and passes it to the Relay server in order to read the encrypted Provisioning Information from the mailbox.
-
-Relay server has finally a given pair of Sender and Receiver devices bound to the mailbox by provided Sender (at the time of mailbox creation) and Receiver (at the time of reading secure content from the mailbox) Device Claims. Only bound devices are allowed to read or write data to the mailbox or to delete the mailbox.
-
-## Stateless workflow
-
-The stateless workflow completes the common steps described in "Credential transfer workflows" section, then finishes the transfer completing the following steps.
-Receiver device, having read the encrypted Provisioning Information from the Relay mailbox, decrypts it with the Secret received from the Sender and starts credential registering or provisioning process on the device. Once the Receiver device has successfully provisioned credentials, it deletes the mailbox by sending a DeleteMailbox call to the Relay server.
-
-
-~~~ plantuml-utxt
-participant Sender
-participant Relay
-participant Receiver
-
-note over Sender, Relay
-  Create mailbox with Provisioning Info
-  encrypted with Secret
-end note
-Sender -> Relay: CreateMailbox
-Relay -> Sender: URL link to mailbox
-
-note over Sender, Receiver
-  Send URL link to mailbox and Secret
-end note
-Sender -> Receiver: URL link and Secret
-
-Receiver -> Relay: ReadSecureContentFromMailbox
-Relay -> Receiver: Encrypted info
-note over Relay, Receiver
-  Decrypt with Secret to get Provisioning Info
-end note
-
-Receiver -> Relay: DeleteMailbox
-Relay -> Receiver: OK
-
-note over Relay, Receiver
-  Provision or Register credentials
-end note
-~~~
-{: #stateless-flow-image title="Sample stateless workflow"}
-
-## Stateful workflow
-
-The stateful workflow completes the common steps described in "Credential transfer workflows" section, then finishes the transfer completing the following steps.
-
-Then the Receiver device, having downloaded the encrypted Provisioning Information from the mailbox by URL and decrypted it with the Secret, generates a new structure of Provisioning Information, e.g. a digital key, and encrypts it with the same Secret, received from the Sender device. It then stores the payload in the same mailbox on the Relay server. In addition to the encrypted payload, Receiver stores a Receiver Notification Token in the given mailbox.
-
-Having received the encrypted Provisioning Information, the Relay server sends a Notification to the Sender device using the Sender Notification Token.
-
-Sender device, having received the notification from the Relay server, reads secure content from the mailbox and decrypts all using the same Secret. Sender device generates new Provisioning Information, encrypts all fields using the Secret and stores all data in the same  mailbox on the Relay server.
-
-Relay server, having stored the data above, sends a notification to the Receiver device using Receiver Notification Token. Receiver device, having received the notification, reads the encrypted Provisioning Information, decrypts the data using the same Secret and uses this data to finalize credential registration or provisioning on device.
-
-Once the Receiver device has successfully registered or provisioned credentials, it deletes the mailbox by sending a DeleteMailbox call to the Relay server.
-Sender device may terminate the secure credential transfer by deleting the mailbox it created at any time. Deletion of the mailbox on the Relay server stops any on-going credential transfer process.
-
-~~~ plantuml-utxt
-participant Sender
-participant Relay
-participant Receiver
-
-note over Sender, Relay
-  Create and encrypt Provisioning
-  Info 1 encrypted with Secret
-end note
-Sender -> Relay: CreateMailbox
-
-Relay -> Sender: URL link to mailbox
-
-note over Sender, Receiver
-  Send URL link to mailbox and Secret
-end note
-Sender -> Receiver: URL link and Secret
-
-Receiver -> Relay: ReadSecureContentFromMailbox
-note over Relay, Receiver
-  Decrypt with Secret to get Provisioning Info 1
-end note
-Relay -> Receiver: encrypted info
-
-
-note over Relay, Receiver
-  Update with Provision Info 2
-  encrypted with Secret
-  Provision Info 2 = new Provisioning Info
-end note
-Receiver -> Relay: UpdateMailbox(encrypted info)
-Relay -> Receiver: OK
-
-Relay -> Sender: Push Notification
-
-Sender -> Relay: ReadSecureContentFromMailbox
-Relay -> Sender: encrypted info
-note over Sender, Relay
-  Decrypt with Secret to get Provision Info 2
-end note
-
-note over Sender, Relay
-  Update with Provision Info 3
-  encrypted with Secret
-  Provision Info 3 = new Provisioning Info
-end note
-Sender -> Relay: UpdateMailbox(encrypted info)
-Relay -> Sender: OK
-
-Relay -> Receiver: Push Notification
-Receiver -> Relay: ReadSecureContentFromMailbox
-Relay -> Receiver: encrypted info
-note over Relay, Receiver
-  Decrypt with Secret for Provision Info 3
-end note
-
-Receiver -> Relay: DeleteMailbox
-Relay -> Receiver: OK
-
-note over Relay, Receiver
-  Provision or Register credentials
-end note
-~~~
-{: #stateful-flow-image title="Sample stateful workflow"}
 
 ## Provisioning Information Structure
 
-The Provisioning Information is the data transfered via the Relay Server between the Sender device and Receiver device. Each use case defines its own specalized Provisioning Information format, but all formats must at least adhear to the following structure. Formats are free to define new top level keys, so clients shouldn't be surprised if a message of an unexpected format has specialized top level keys.
+The Provisioning Information is the data transfered via the Relay Server between the Initiator Device and Recipient Device. Each use case defines its own specalized Provisioning Information format, but all formats must at least adhear to the following structure. Formats are free to define new top level keys, so clients shouldn't be surprised if a message of an unexpected format has specialized top level keys.
 
 | Key           | Type       | Required | Description
 | ------        | ---        | ---      | ---
-| format        | String     |   Yes    | The Provisioning Information format that the message follows. This is used by the Sender device and Receiver device to know how to parse the message.
+| format        | String     |   Yes    | The Provisioning Information format that the message follows. This is used by the Initiator Device and Recipient Device to know how to parse the message.
 | content       | Dictionary |   Yes    | A dictionary of content to be used for the credential transfer. See each format's specification for exact fields.
 
 ##### Provisioning Information Format
@@ -314,7 +294,7 @@ Each Provisioning Information format must have the message structure defined in 
 
 ### Provisioning Information Encryption
 
-Provisioning Information will be stored on the Relay Server encrypted. The Secret used to encrypt the Provisioning Information should be given to the Receiver Device via a "Share URL" (a URL link to a mailbox). The encrypted payload should be a data structure having the following key-value pairs:
+Provisioning Information will be stored on the Relay Server encrypted. The Secret used to encrypt the Provisioning Information should be given to the Recipient Device via a "Share URL" (a URL link to a mailbox). The encrypted payload should be a data structure having the following key-value pairs:
 
 - "type" (String, Required) - the encryption algorithm and mode used.
 - "data" (String, Required) - Base64 encoded binary value of the encrypted Provisioning Information, aka the ciphertext.
@@ -337,7 +317,7 @@ The following algorithms and modes are mandatory to implement:
 
 ## Share URL
 
-A "Share URL" is the url a Sender device sends to the Receiver device allowing it to retrieve the Provisioning Information stored on the Relay Server. A Share URL is made up of the following fields:
+A "Share URL" is the url a Initiator Device sends to the Recipient Device allowing it to retrieve the Provisioning Information stored on the Relay Server. A Share URL is made up of the following fields:
 
 ~~~
 https://{RelayServerHost}/v{ApiVersion}/m/{MailboxIdentifier}?v={CredentialVertical}#{Secret}
@@ -355,9 +335,9 @@ https://{RelayServerHost}/v{ApiVersion}/m/{MailboxIdentifier}?v={CredentialVerti
 
 ### Credential Vertical in Share URL
 
-When a user interacts with a share URL on a Receiver device it can be helpful to know what Credential Vertical this share is for. This is particularly important if the Receiver device has multiple applications that can handle a share URL. For example, a Receiver device might want to handle a general access share in their wallet app, but handle car key shares in a specific car application.
+When a user interacts with a share URL on a Recipient Device it can be helpful to know what Credential Vertical this share is for. This is particularly important if the Recipient Device has multiple applications that can handle a share URL. For example, a Recipient Device might want to handle a general access share in their wallet app, but handle car key shares in a specific car application.
 
-To properly route a share URL, the sender can include the Credential Vertical in the share URL as a query parameter. The Credential Vertical can't be included in the encrypted payload because the Receiver device might need to open the right application before retrieving the secure payload. The Credential Vertical query parameter uses the "v" key and supports the below types. If no Credential Vertical is provided it will be assumed that this is a general access share URL.
+To properly route a share URL, the Initiator can include the Credential Vertical in the share URL as a query parameter. The Credential Vertical can't be included in the encrypted payload because the Recipient Device might need to open the right application before retrieving the secure payload. The Credential Vertical query parameter uses the "v" key and supports the below types. If no Credential Vertical is provided it will be assumed that this is a general access share URL.
 
 | Vertical       | Value       |
 | --------       | ----------- |
@@ -370,7 +350,7 @@ https://relayserver.example.com/v1/m/2bba630e-519b-11ec-bf63-0242ac130002?v=c#hX
 ~~~
 {: #car-key-share-url-example title="Car Key Share URL example"}
 
-The Credential Vertical query parameter can be added to the share URL by the Sender device when constructing the full share URL that is going to be sent to the Receiver device.
+The Credential Vertical query parameter can be added to the share URL by the Initiator Device when constructing the full share URL that is going to be sent to the Recipient Device.
 
 
 # API connection details
@@ -446,7 +426,7 @@ The data structure contains the following fields:
     1. type (String, Required) - notification token name. Used to define which Push Notification System to be used to notify appropriate remote device of a mailbox data update. (E.g. "com.apple.apns" for APNS)
     2. tokenData (String, Required) - notification token data (data encoded based on specific device OEM notification service rules - e.g. HEX-encoded or Base64-encoded) - application-specific - refer to appropriate Push Notification System specification.
 - mailboxConfiguration (Object, Optional) - optional mailbox configuration, defines access rights to the mailbox, mailbox expiration time. Required at the time of the mailbox creation. OEM device may provide this data in the request, Relay server shall define a default configuration, if it is not provided in the incoming request. Data structure includes the following:
-    1. accessRights (String, Optional) - optional access rights to the mailbox for Sender and  Receiver devices. Default access to the mailbox is Read and Delete.
+    1. accessRights (String, Optional) - optional access rights to the mailbox for Initiator and  Recipient devices. Default access to the mailbox is Read and Delete.
 Value is defined as a combination of the following values: "R" - for read access, "W" - for write access, "D" - for delete access. Example" "RD" - allows to read from the mailbox and delete it.
     2. expiration (String, Required) - Mailbox expiration time in "YYYY-MM-DDThh:mm:ssZ" format (UTC time zone) {{!RFC3339}}. Mailbox has limited livetime. Once expired, it SHALL be deleted - refer to DeleteMailbox endpoint. Relay server SHOULD periodically check for expired mailboxes and delete them.
 
@@ -597,7 +577,7 @@ Not Found - mailbox with provided mailboxIdentifier not found.
 
 ## DeleteMailbox
 
-An application running on a remote device can invoke this API on Relay Server to close the existing mailbox after it served its purpose. Receiver or Sender device needs to present a Device Claim in order to close the mailbox.
+An application running on a remote device can invoke this API on Relay Server to close the existing mailbox after it served its purpose. Recipient or Initiator Device needs to present a Device Claim in order to close the mailbox.
 
 ### Endpoint
 
@@ -735,7 +715,7 @@ Not Found - mailbox with provided mailboxIdentifier not found.
 
 ## RelinquishMailbox
 
-An application running on a remote device can invoke this API on Relay Server to relinquish their ownership of the mailbox. Receiver device needs to present the currently established Receiver Device Claim in order to relinquish their ownership of the mailbox. Once relinquished, the mailbox can be bound to a different Receiver device that presents its Device Claim in a ReadSecureContentFromMailbox call.
+An application running on a remote device can invoke this API on Relay Server to relinquish their ownership of the mailbox. Recipient Device needs to present the currently established Recipient Device Claim in order to relinquish their ownership of the mailbox. Once relinquished, the mailbox can be bound to a different Recipient Device that presents its Device Claim in a ReadSecureContentFromMailbox call.
 
 ### Endpoint
 
@@ -772,16 +752,14 @@ Not Found - mailbox with provided mailboxIdentifier not found. Relay server may 
 
 The following threats and mitigations have been considered:
 
-- Sender shares with the wrong receiver
-    - Sender SHOULD be encouraged to share Secret over a channel allowing authentication of the receiver (e.g. voice).
-    - Provisioning Partners SHALL allow senders to cancel existing shares.
-- Malicious receiver forwards the share to 3rd party without redeeming it or the Receiver's device is compromised.
-    - No mitigation, the Sender SHOULD only share with receivers they trust.
-- Malicious receiver attempts re-use share
-    - Provisioning Partners SHALL ensure that the Provisioning Information of a share can only be redeemed once.
-- Share URL accidental disclosure. (e.g. share URL sent as a message which gets displayed on a locked screen)
-    - Knowledge of Secret is required to access Provisioning Information and it SHOULD have been sent in a separate channel.
-    - Device Claim is required (if sender and receiver have already both contacted the Relay server)
+- Initiator shares with the wrong Recipient
+    - Initiator SHOULD be encouraged to share Secret over a channel allowing authentication of the Recipient (e.g. voice).
+    - Verticals allow Initiator to cancel in-flight shares and delete completed shares.
+- Malicious Recipient forwards the share to 3rd party without redeeming it or the Recipient's device is compromised.
+    - No mitigation, the Initiator SHOULD only share with receivers they trust.
+- Share-url and secret is exposed to Recipient plus some other users.
+    - Vericals SHALL ensure that the Provisioning Information of a share can only be redeemed once.
+    - Relay Server SHALL ensure that only first Receiver to claim Provisioning Information gets it.
 - Network attacks
     - Machine-in-the-middle:
       Relay server SHALL only allow TLS connections.
@@ -791,38 +769,33 @@ The following threats and mitigations have been considered:
 - Risk of hosting malicious or untrusted scripts by relay server preview page (ReadDisplayInformationFromMailbox)
     - Relay server should either not allow hosting a third party JavaScripts on a preview page or implement a policy and utilize tools to maintain the trust of such scripts (e.g. force client to verify the script against a good known hash of it).
 
-## Sender/Receiver privacy
+## Initiator/Recipient privacy
 
-- At no time Relay server SHALL store or track the identities of both Sender and Receiver devices.
+- At no time Relay server SHALL store or track the identities of both Initiator and Recipient devices.
 - The value of the Notification Token shall not contain information allowing the identification of the device providing it. It SHOULD also be different for every new share to prevent the Relay server from correlating different sharing.
 - Notification token SHOULD only inform the corresponding device that there has been a data update on the mailbox associated to it (by Device Claim). Each device SHOULD keep track of all mailboxes associated with it and make read calls to appropriate mailboxes.
-- Both Sender and Receiver devices SHOULD store the URL of the Relay server they use for an active act of credential transfer.
+- Both Initiator and Recipient devices SHOULD store the URL of the Relay server they use for an active act of credential transfer.
 - The value of Mailbox-Device-Attestation header parameter SHALL not contain information allowing the identification of the device providing it. It SHOULD also be different for every new share to prevent the Relay server from correlating different sharing.
-- Display Information is not encrypted, therefore, it SHOULD not contain any information allowing to identify Sender or Receiver devices.
+- Display Information is not encrypted, therefore, it SHOULD not contain any information allowing to identify Initiator or Recipient devices.
 
 ## Credential's confidentiality and integrity
 
 - Content of the mailbox SHALL be only visible to devices having Secret.
-- It is recommended to send URL to the mailbox and the Secret over different channels (out-of-band) from Sender device to Receiver device (e.g. send URL over SMS and Secret over iMessage).
 - Relay server MUST not receive the Secret with the MailboxIdentifier at any time.
 - Content of the mailbox MUST guaranty its integrity with cryptographic checksum (e.g. MAC, AES-GCM tag).
 - Relay server SHALL periodically check and delete expired mailboxes ( refer to expiration parameter in the CreateMailbox request).
-- If the Sender device sends both URL and the Secret over the same channel as a single URL,
-the Sender MUST append the Secret as URI fragment {{!RFC3986}}, so that the resulting URL shall look as in the example below. Receiver device, upon receipt of such URL, MUST remove the Fragment (Secret) before calling the Relay server API.
+- It is recommended that URL and secret are send separately. But if the Initiator sends both URL and the Secret as a single URL, Secret MUST be appended as URI fragment {{!RFC3986}}.  Recipient Device, upon receipt of such URL, MUST remove the Fragment (Secret) before calling the Relay server API.
 
 ~~~
 “https://relayserver.example.com/v1/m/{mailboxIdentifier}#{Secret}”
 ~~~
 {: #link-with-fragment title="Example of URL with Secret as URI Fragment"}
 
-## Second factor authentication for Receiver credential provisioning
+## Second factor authentication for Recipient Credential Provisioning
 
-- Provisioning Partner shall require an additional security confirmation (PIN code) from Receiver Device at the time of credential provisioning.
-- PIN code shall be generated by the Sender Device at the time when it creates a new Mailbox with Provisioning Information on a Relay Server.
-- PIN code shall be sent from Sender device to Receiver device in a secure way (preferrably over encrypted channel) out-of-band with the Mailbox URL and Secret
-- If Sender device can not send the PIN code over secure channel, it may include it into encrypted Payload stored on the relay server so that Receiver device can decrypt it and use to get Provisioning Information from Provisioning Partner.
-- Provisioning Partner shall limit the number of PIN code entry attempts at the time when Receiver device calls it in order to receive Provisioning Information.
-- The way PIN code is transferred between Sender device and Receiver device is defined by specific implementation and out of scope of this document.
+- Verical determines need of a second factor to Provision Credential on Recipient device. This determination is done on the basis of known security properties of the communication method used to send the invitation.
+- Verticals can use PIN codes, presence of Initiator Credential or other mechanisms as second factor.
+- Details of the second factor and policies around use of the second factor is out of scope of this document.
 
 
 # IANA Considerations
@@ -851,7 +824,7 @@ The following people provided substantive contributions to this document:
 - Ben Chester
 - Casey Astiz
 - Jean-Luc Giraud
-- Yogesh Karandikar
+- Matt Byington
 - Alexey Bulgakov
 - Tommy Pauly
 - Crystal Qin

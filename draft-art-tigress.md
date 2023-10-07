@@ -94,7 +94,7 @@ informative:
 
 --- abstract
 
-Digital Credentials allow users to access properties like Cars or Hotels using their mobile devices. Once a user has a Credential on a device, sharing it to others is a natural use case. This document describes a sharing flow that allows an intuitive and seamless user experience, similar to sharing other digital assets like photos or documents. The sharing process should be secure and privacy preserving. This document also defines a new transport to meet unique requirements of sharing a Credential.
+Digital Credentials allow users to access Homes, Cars or Hotels using their mobile devices. Once a user has a Credential on a device, sharing it to others is a natural use case. This document describes a sharing flow that allows convenient and seamless user experience, similar to sharing other digital assets like photos or documents. The sharing process should be secure and privte. This document also defines a new transport to meet unique requirements of sharing a Credential.
 
 --- middle
 
@@ -102,22 +102,22 @@ Digital Credentials allow users to access properties like Cars or Hotels using t
 
 Mobile devices with ever increasing computational power and security capabilities are enabling various use cases. One such category includes use of mobile devices to gain access to a property that a user owns or rents or is granted access to. The cryptographic material and other data required to enable this use case is termed as Digital Credential. The process of getting a Digital Credential on a mobile device is termed as Provisioning.
 
-Based on type of property, different public or proprieatary standards (termed as Verticals) govern details of Digital Credentials used to access them. These details include policies, mechanism and practices to create, maintain and use Digital Credentials and vary considerably across Verticals.
+Based on type of property, various public or proprietary standards govern details of Digital Credentials used to access them. These sets of standards are termed as Verticals. The details include policies, mechanism and practices to create, maintain and use Digital Credentials and vary considerably across Verticals.
 
 Once a user has a Digital Credential for some Vertical provisioned on their mobile device, next natural use case is to share it with others. Sharing a Credential should feel like a natural extension of regular communication methods (like instant messaging, sms, email). The user experience of sharing a Credential should be intuitive, similar to sharing other digital assets like photos or documents. The sharing process should be secure and privacy preserving.
 
 Credentials pose two requirements that differ from sharing other digital assets. The Initiator and Recipient devices may need to communicate back and forth to get the necessary Provisioning Information. The Provisioning information exchange must be limited to Initiator device and the first Recipient device to claim the information.
 
-To achive these goals, a new transport is necessary. This documents describes a Hypertext (HTTP) Application Programming Interface (API) to create such a transport termed as Relay Server. The document also defines JSON based data to enable a uniform user experience for securely sharing Digital Credentials of various types.
+To achieve these goals, a new transport is necessary. This document specifies an Application Programming Interface(API) for a transport protocol built using standard HTTP [RFC9110] to create such a transport termed as Relay Server. The document also defines data in JSON standard [RFC8259] to enable a uniform user experience for securely sharing Digital Credentials of various types.
 
 
-# Coventions & Definitions
+# Conventions & Definitions
 
 {::boilerplate bcp14-tagged}
 
 ## General Terms
 - Digital Credential (or simply Credential) - Cryptographic material and other data used to authorize User with an access point. The cryptographic material can also be used for mutual authentication between user device and access point.
-- Digital Credential Vertical (or simply Vertical) - The public or propriatary standards that that define details of Digital Credentials for type of property accessed. The details include policy, process and mechanism to create, maintain and use Digital Credentials in the given Vertical.
+- Digital Credential Vertical (or simply Vertical) - The public or proprietary standards that that define details of Digital Credentials for type of property accessed. The details include policy, process and mechanism to create, maintain and use Digital Credentials in the given Vertical.
 - Provisioning - A process of adding a new Digital Credential to the device.
 - Provisioning Entity - An entity that facilitates creation, update and termination (Lifecycle Management) of the Credential. Based on Vertical, the role of Provisioning Entity may be played by various actors in various stages of Credential lifecycle.
 - Provisioning Information - data transferred from Initiator to Recipient that is both necessary and sufficient for the Recipient to Provision a Credential.
@@ -131,14 +131,14 @@ To achive these goals, a new transport is necessary. This documents describes a 
 
 ## Some Example Use Cases
 
-- Amit owns a car that supports Digital Credentials. Being a tech enthusiast, he has the Credential provisioned on his mobile device. He can now use his mobile device to lock/unlock and operate the car. One Monday he is out of town and realizes that his car needs to be moved for street cleaning. He asks his neighbor Bob for help via their favorite instant messaging method. As Bob agress, Amit shares the Digital Credential to Bob via the next instant message. Bob accepts the Credential and uses his mobile device to unlock Amit's car and drive it to other side of street.
+- Amit owns a car that supports Digital Credentials. Being a tech enthusiast, he has the Credential provisioned on his mobile device. Amit can now use his mobile device to lock/unlock and operate his car. One Monday he is out of town and realizes that his car needs to be moved for street cleaning. He asks his neighbor Bob for help via their favorite instant messaging method. As Bob agrees, Amit shares the Digital Credential to Bob via the next instant message. Bob accepts the Credential and uses his mobile device to unlock Amit's car and drive it to the other side of street.
 
-- Alice booked a room at a hotel that supports Digital Credentials. She being a frequent traveller has the Digital Credential provisioned on her mobile devices. As her flight gets delayed, she realizes that her partner Bakari will reach the hotel first. So she shares the Digital Credential with him over email. Bakari sees the email after his flight lands and he accepts the Credential. On reaching the hotel. Bakari is able to access common areas and their room using his mobile devices.
+- Alice booked a room at a hotel that supports Digital Credentials. Being a frequent traveller, she has the Digital Credential provisioned on her mobile device. As her flight gets delayed, she realizes that her partner Bakari will reach the hotel first. So she shares the Digital Credential with him over email. Bakari sees the email after his flight lands and he accepts the shared Credential. On his arrival to the hotel, Bakari is able to access common areas and their room using his mobile device.
 
 
 ## Credential Sharing Flow
 
-A simplified sharing flow is shown in the sequence diagram. Initiator User instructs their device to share a Credential over their preferred communication method. Recipient User accepts the Credential share. Then the two devices go back and forth as necessary to transfer Provisioning Information. After the Provisioning Information transfer is complete Recipient device gets the Credential Provisioned.
+A simplified sharing flow is shown in the sequence diagram below. Initiator (User) uses their device to share a Credential over their preferred communication method. Recipient User accepts the Credential share invitation. Then the two devices go back and forth as necessary to transfer Provisioning Information. After the Provisioning Information transfer is complete Recipient device gets the Credential Provisioned.
 
 
 
@@ -265,7 +265,7 @@ end note
 
 ## Provisioning Information Structure
 
-The Provisioning Information is the data transfered via the Relay Server between the Initiator Device and Recipient Device. Each use case defines its own specalized Provisioning Information format, but all formats must at least adhear to the following structure. Formats are free to define new top level keys, so clients shouldn't be surprised if a message of an unexpected format has specialized top level keys.
+The Provisioning Information is the data transferred via the Relay Server between the Initiator Device and Recipient Device. Each use case defines its own specialized Provisioning Information format, but all formats must at least adhere to the following structure. Formats are free to define new top level keys, so clients shouldn't be surprised if a message of an unexpected format has specialized top level keys.
 
 | Key           | Type       | Required | Description
 | ------        | ---        | ---      | ---
@@ -758,7 +758,7 @@ The following threats and mitigations have been considered:
 - Malicious Recipient forwards the share to 3rd party without redeeming it or the Recipient's device is compromised.
     - No mitigation, the Initiator SHOULD only share with receivers they trust.
 - Share-url and secret is exposed to Recipient plus some other users.
-    - Vericals SHALL ensure that the Provisioning Information of a share can only be redeemed once.
+    - Verticals SHALL ensure that the Provisioning Information of a share can only be redeemed once.
     - Relay Server SHALL ensure that only first Receiver to claim Provisioning Information gets it.
 - Network attacks
     - Machine-in-the-middle:
@@ -793,7 +793,7 @@ The following threats and mitigations have been considered:
 
 ## Second factor authentication for Recipient Credential Provisioning
 
-- Verical determines need of a second factor to Provision Credential on Recipient device. This determination is done on the basis of known security properties of the communication method used to send the invitation.
+- Vertical determines need of a second factor to Provision Credential on Recipient device. This determination is done on the basis of known security properties of the communication method used to send the invitation.
 - Verticals can use PIN codes, presence of Initiator Credential or other mechanisms as second factor.
 - Details of the second factor and policies around use of the second factor is out of scope of this document.
 

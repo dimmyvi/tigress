@@ -94,7 +94,7 @@ informative:
 
 --- abstract
 
-Digital Credentials allow users to access Homes, Cars or Hotels using their mobile devices. Once a user has a Credential on a device, sharing it to others is a natural use case. This document describes a sharing flow that allows convenient and seamless user experience, similar to sharing other digital assets like photos or documents. The sharing process should be secure and privte. This document also defines a new transport to meet unique requirements of sharing a Credential.
+Digital Credentials allow users to access Homes, Cars or Hotels using their mobile devices. Once a user has a Credential on a device, sharing it to others is a natural use case. This document describes a sharing flow that allows convenient and seamless user experience, similar to sharing other digital assets like photos or documents. The sharing process should be secure and private. This document also defines a new transport to meet unique requirements of sharing a Credential.
 
 --- middle
 

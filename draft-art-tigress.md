@@ -166,7 +166,7 @@ end
 
 ## Things to note
 - Initiator User and Recipient user may not be online at the same time.
-- Users can pick any communication method for delivering invitation. Most communication methods have a goal to provide secure and private communication, but those properties can be taken for granted.
+- Users can pick any communication method for delivering invitation. Most communication methods have a goal to provide secure and private communication, but those properties can not be taken for granted.
 - Once a Recipient User accepts the Invitation from a device, only that Recipient device SHALL get the Provisioning Information.
 - Verticals may define a second factor to authenticate a Digital Credential Provisioned via sharing. The mechanisms and policies around the second factor are Vertical dependent and out of scope of this design.
 

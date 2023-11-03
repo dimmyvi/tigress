@@ -1,0 +1,2976 @@
+<!DOCTYPE html>
+<html lang="en" class="Internet-Draft">
+<head>
+<meta charset="utf-8">
+<meta content="Common,Latin" name="scripts">
+<meta content="initial-scale=1.0" name="viewport">
+<title>Transfer Digital Credentials Securely</title>
+<meta content="Dmitry Vinokurov" name="author">
+<meta content="Yogesh Karandikar" name="author">
+<meta content="Matthias Lerch" name="author">
+<meta content="Alex Pelletier" name="author">
+<meta content="Nick Sha" name="author">
+<meta content="
+       Digital Credentials allow users to access Homes, Cars or Hotels using their mobile devices. Once a user has a Credential on a device, sharing it to others is a natural use case. This document describes a sharing flow that allows convenient and seamless user experience, similar to sharing other digital assets like photos or documents. The sharing process should be secure and private. This document also defines a new transport to meet unique requirements of sharing a Credential. 
+    " name="description">
+<meta content="xml2rfc 3.18.2" name="generator">
+<meta content="tigress" name="keyword">
+<meta content="requirements" name="keyword">
+<meta content="draft-vinokurov-tigress-http-latest" name="ietf.draft">
+<!-- Generator version information:
+  xml2rfc 3.18.2
+    Python 3.11.6
+    ConfigArgParse 1.5.3
+    google-i18n-address 3.1.0
+    intervaltree 3.1.0
+    Jinja2 3.1.2
+    lxml 4.9.3
+    platformdirs 3.11.0
+    pycountry 22.3.5
+    PyYAML 6.0
+    requests 2.31.0
+    setuptools 67.7.2
+    six 1.16.0
+    wcwidth 0.2.9
+-->
+<link href="draft-vinokurov-tigress-http.xml" rel="alternate" type="application/rfc+xml">
+<link href="#copyright" rel="license">
+<style type="text/css">@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Lora SemiBold'), local('Lora-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-semibold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Cabin Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Cabin Condensed SemiBold'), local('CabinCondensed-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/cabincondensed-semibold-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Cabin Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Cabin Condensed SemiBold'), local('CabinCondensed-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/cabincondensed-semibold-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Cabin Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Cabin Condensed SemiBold'), local('CabinCondensed-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/cabincondensed-semibold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  color-scheme: light dark;
+  --background-color: #fff;
+  --text-color: #222;
+  --title-color: #191919;
+  --link-color: #2a6496;
+  --highlight-color: #f9f9f9;
+  --line-color: #eee;
+  --pilcrow-weak: #ddd;
+  --pilcrow-strong: #bbb;
+  --small-font-size: 14.5px;
+  --font-mono: 'Oxygen Mono', monospace;
+  scrollbar-color: #bbb #eee;
+}
+body {
+  max-width: 600px;
+  margin: 75px auto;
+  padding: 0 5px;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  font: 16px/22px "Lora", serif;
+  scroll-behavior: smooth;
+}
+
+.ears {
+  display: none;
+}
+
+/* headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Cabin Condensed", sans-serif;
+  font-weight: 600;
+  margin: 0.8em 0 0.3em;
+  font-size-adjust: 0.5;
+  color: var(--title-color);
+}
+h1#title {
+  font-size: 32px;
+  line-height: 40px;
+  clear: both;
+}
+h1#title, h1#rfcnum {
+  margin: 1.5em 0 0.2em;
+}
+h1#rfcnum + h1#title {
+  margin: 0.2em 0;
+}
+
+h1, h2, h3 {
+  font-size: 22px;
+  line-height: 27px;
+}
+h4, h5, h6 {
+  font-size: 20px;
+  line-height: 24px;
+}
+
+/* general structure */
+.author {
+  padding-bottom: 0.3em;
+}
+#abstract+p {
+  font-size: 18px;
+  line-height: 24px;
+}
+#abstract+p code, #abstract+p samp, #abstract+p tt {
+  font-size: 16px;
+  line-height: 0;
+}
+
+p {
+  padding: 0;
+  margin: 0.5em 0;
+  text-align: left;
+}
+div {
+  margin: 0;
+}
+.alignRight.art-text {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
+}
+.alignRight.art-text pre {
+  padding: 0;
+  width: auto;
+}
+.alignRight {
+  margin: 1em 0;
+}
+.alignRight > *:first-child {
+  border: none;
+  margin: 0;
+  float: right;
+  clear: both;
+}
+.alignRight > *:nth-child(2) {
+  clear: both;
+  display: block;
+  border: none;
+}
+svg {
+  display: block;
+}
+/* font-family isn't space-separated, but =~ will have to do */
+svg[font-family~="monospace" i], svg [font-family~="monospace" i] {
+  font-family: var(--font-mono);
+}
+.alignCenter.art-text {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
+}
+.alignCenter.art-text pre {
+  padding: 0;
+  width: auto;
+}
+.alignCenter {
+  margin: 1em 0;
+}
+.alignCenter > *:first-child {
+  border: none;
+  /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+     support flexbox yet.
+  */
+  display: table;
+  margin: 0 auto;
+}
+
+/* lists */
+ol, ul {
+  padding: 0;
+  margin: 0 0 0.5em 2em;
+}
+:is(ol, ul) :is(ol, ul) {
+  margin-left: 1em;
+}
+li {
+  margin: 0 0 0.25em 0;
+}
+.ulCompact li {
+  margin: 0;
+}
+ul.empty, .ulEmpty {
+  list-style-type: none;
+}
+ul.empty li, .ulEmpty li {
+  margin-top: 0.5em;
+}
+:is(ul, ol).compact, .ulCompact, .olCompact {
+  line-height: 1;
+  margin: 0 0 0 2em;
+}
+
+/* definition lists */
+dl {
+  clear: left;
+  --indent: 3ch;
+  /* --indent: attr(indent ch); not supported in any browser, but we can dream */
+}
+dl.olPercent {
+  --indent: 5ch;
+}
+dl > dt {
+  float: left;
+  margin-right: 2ch;
+  min-width: 8ch;
+}
+dl.dlNewline > dt {
+  float: none;
+}
+dl > dd {
+  margin-bottom: .8em;
+  margin-left: var(--indent) !important; /* stupid element overrides */
+  min-height: 2ex;
+}
+dl.olPercent > dt {
+  min-width: calc(var(--indent) - 2ch);
+}
+:is(dl.compact, .dlCompact) > dd {
+  margin-bottom: 0;
+}
+:is(dl.compact, .dlCompact) > dd > :is(:first-child, .break:first-child + *) {
+  margin-top: 0;
+}
+:is(dl.compact, .dlCompact) > dd > :is(:last-child) {
+  margin-bottom: 0;
+}
+dl > dd > dl {
+  margin-top: 0.5em;
+  margin-bottom: 0;
+}
+:is(dd, span).break {
+  display: none;
+}
+
+/* links */
+a, a[href].selfRef:hover {
+  text-decoration: none;
+}
+a[href] {
+  color: var(--link-color);
+}
+a[href].selfRef, .iref + a[href].internal {
+  color: var(--text-color);
+}
+a[href]:hover {
+  text-decoration: underline;
+}
+a[href].selfRef:hover {
+  background-color: var(--highlight-color);
+}
+a.xref:is(.cite, .auto), :is(#status-of-memo, #copyright) a {
+  white-space: nowrap;
+}
+
+/* Figures */
+tt, code, pre {
+  background-color: var(--highlight-color);
+  font: 14px/22px var(--font-mono);
+}
+tt, code {
+  /* changing the font for inline elements leads to different ascender
+     and descender heights; as we want to retain baseline alignment,
+     remove leading to avoid altering the final height of lines
+     note: this fails if these blocks take an entire line,
+     a different solution would be great */
+  line-height: 0;
+}
+:is(h1, h2, h3, h4, h5, h6) :is(tt, code) {
+  font-size: 84%;
+}
+pre {
+  border: 1px solid var(--line-color);
+  font-size: 13.5px;
+  line-height: 16px;
+  letter-spacing: -0.2px;
+  margin: 5px;
+  padding: 5px;
+}
+img {
+  max-width: 100%;
+}
+figure {
+  margin: 0.5em 0;
+  padding: 0;
+}
+figure blockquote {
+  margin: 0.8em 0.4em 0.4em;
+}
+figcaption, caption {
+  font-style: italic;
+  margin: 0.5em 1.5em;
+  text-align: left;
+}
+@media screen {
+  /* Auto-collapse boilerplate. */
+  :is(#status-of-memo, #copyright) p {
+    margin: -2px 0;
+    max-height: 0;
+    transition: max-height 2s ease, margin 0.5s ease 0.5s;
+    overflow: hidden;
+  }
+  :is(#status-of-memo, #copyright):hover p,
+  :is(#status-of-memo, #copyright) h2:target ~ p {
+    margin: 0.5em 0;
+    max-height: 500px;
+    overflow: auto;
+  }
+  pre, svg {
+    display: inline-block;
+    overflow-x: auto;
+  }
+  pre {
+    max-width: 100%;
+    width: calc(100% - 22px - 1em);
+  }
+  svg {
+    max-width: calc(100% - 22px - 1em);
+  }
+  figure pre {
+    display: block;
+    width: calc(100% - 25px);
+  }
+  :is(pre, svg) + .pilcrow {
+    display: inline-block;
+    vertical-align: text-bottom;
+    padding-bottom: 8px;
+  }
+}
+
+/* aside, blockquote */
+aside, blockquote {
+  margin-left: 0;
+  padding: 0 2em;
+  font-style: italic;
+}
+blockquote {
+  margin: 1em 0;
+}
+cite {
+  display: block;
+  text-align: right;
+  font-style: italic;
+}
+
+/* tables */
+table {
+  max-width: 100%;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+}
+table.right {
+  margin-left: auto;
+}
+table.center {
+  margin-left: auto;
+  margin-right: auto;
+}
+table.left {
+  margin-right: auto;
+}
+thead, tbody {
+  border: 1px solid var(--line-color);
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 5px 10px;
+}
+th {
+  background-color: var(--line-color);
+}
+:is(tr:nth-child(2n), thead+tbody > tr:nth-child(2n+1)) > td {
+  background-color: var(--background-color);
+}
+:is(tr:nth-child(2n+1), thead+tbody > tr:nth-child(2n)) > td {
+  background-color: var(--highlight-color);
+}
+table caption {
+  margin: 0;
+  padding: 3px 0 3px 1em;
+}
+table p {
+  margin: 0;
+}
+
+/* pilcrow */
+a.pilcrow {
+  margin-left: 3px;
+  opacity: 0.2;
+  user-select: none;
+}
+a.pilcrow[href] { color: var(--pilcrow-weak); }
+a.pilcrow[href]:hover { text-decoration: none; }
+@media not print {
+  :hover > a.pilcrow {
+    opacity: 1;
+  }
+  a.pilcrow[href]:hover {
+    color: var(--pilcrow-strong);
+    background-color: transparent;
+  }
+}
+@media print {
+  a.pilcrow {
+    display: none;
+  }
+}
+
+/* misc */
+hr {
+  border: 0;
+  border-top: 1px solid var(--line-color);
+}
+.bcp14 {
+  font-variant: small-caps;
+  font-weight: 600;
+  font-size: var(--small-font-size);
+}
+.role {
+  font-variant: all-small-caps;
+}
+sub, sup {
+  line-height: 1;
+  font-size: 80%;
+}
+
+/* info block */
+#identifiers {
+  margin: 0;
+  font-size: var(--small-font-size);
+  line-height: 18px;
+  --identifier-width: 15ch;
+}
+#identifiers dt {
+  width: var(--identifier-width);
+  min-width: var(--identifier-width);
+  clear: left;
+  float: left;
+  text-align: right;
+  margin-right: 1ch;
+}
+#identifiers dd {
+  margin: 0;
+  margin-left: calc(1em + var(--identifier-width)) !important;
+  min-width: 5em;
+}
+#identifiers .authors .author {
+  display: inline-block;
+  margin-right: 1.5em;
+}
+#identifiers .authors .org {
+  font-style: italic;
+}
+
+/* The prepared/rendered info at the very bottom of the page */
+.docInfo {
+  color: #999;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 2em;
+}
+.docInfo .prepared {
+  float: left;
+}
+.docInfo .prepared {
+  float: right;
+}
+
+/* table of contents */
+#toc {
+  padding: 0.75em 0 2em 0;
+  margin-bottom: 1em;
+}
+#toc nav ul {
+  margin: 0 0.5em 0 0;
+  padding: 0;
+  list-style: none;
+}
+#toc nav li {
+  line-height: 1.3em;
+  margin: 2px 0;
+  padding-left: 1.2em;
+  text-indent: -1.2em;
+}
+#toc a.xref {
+  white-space: normal;
+}
+/* references */
+.references dt {
+  text-align: right;
+  font-weight: bold;
+  min-width: 10ch;
+  margin-right: 1.5ch;
+}
+.references dt:target::before {
+  content: "⇒";
+  width: 15px;
+  margin: 0 10px 0 -25px;
+}
+.references dd {
+  margin-left: 12ch !important;
+  overflow: auto;
+}
+
+.refInstance {
+  margin-bottom: 1.25em;
+}
+
+.references .ascii {
+  margin-bottom: 0.25em;
+}
+
+/* index */
+#rfc\.index\.index + ul {
+  margin-left: 0;
+}
+
+/* authors */
+address.vcard {
+  font-style: normal;
+  margin: 1em 0;
+}
+address.vcard .nameRole {
+  font-weight: 700;
+  margin-left: 0;
+}
+address.vcard .label {
+  margin: 0.5em 0;
+}
+address.vcard .type {
+  display: none;
+}
+.alternative-contact {
+  margin: 1.5em 0 1em;
+}
+hr.addr {
+  border-top: 1px dashed;
+  margin: 0;
+  color: #ddd;
+  max-width: calc(100% - 16px);
+}
+@media (min-width: 500px) {
+  #authors-addresses > section {
+    column-count: 2;
+    column-gap: 20px;
+  }
+  #authors-addresses > section > h2 {
+    column-span: all;
+  }
+  /* hack for break-inside: avoid-column */
+  #authors-addresses address {
+    display: inline-block;
+    break-inside: avoid-column;
+  }
+}
+
+.rfcEditorRemove p:first-of-type {
+  font-style: italic;
+}
+.cref {
+  background-color: rgba(249, 232, 105, 0.3);
+  padding: 2px 4px;
+}
+.crefSource {
+  font-style: italic;
+}
+/* alternative layout for smaller screens */
+@media screen and (max-width: 929px) {
+  #toc {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    padding: 1px 0 0 0;
+    margin: 0;
+    border-bottom: 1px solid #ccc;
+    opacity: 0.6;
+  }
+  #toc.active {
+      opacity: 1;
+  }
+  #toc h2 {
+    margin: 0;
+    padding: 2px 0 2px 6px;
+    padding-right: 1em;
+    font-size: 18px;
+    line-height: 24px;
+    min-width: 190px;
+    text-align: right;
+    background-color: #444;
+    color: white;
+    cursor: pointer;
+  }
+  #toc h2::before { /* css hamburger */
+    float: right;
+    position: relative;
+    width: 1em;
+    height: 1px;
+    left: -164px;
+    margin: 8px 0 0 0;
+    background: white none repeat scroll 0 0;
+    box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+    content: "";
+  }
+  #toc nav {
+    display: none;
+    background-color: var(--background-color);
+    padding: 0.5em 1em 1em;
+    overflow: auto;
+    overscroll-behavior: contain;
+    height: calc(100vh - 48px);
+    border-left: 1px solid #ddd;
+  }
+  #toc.active nav {
+    display: block;
+  }
+  /* Make the collapsed ToC header render white on gray also when it's a link */
+  #toc h2 a,
+  #toc h2 a:link,
+  #toc h2 a:focus,
+  #toc h2 a:hover,
+  #toc a.toplink,
+  #toc a.toplink:hover {
+    color: white;
+    background-color: #444;
+    text-decoration: none;
+  }
+  #toc a.toplink {
+    margin-top: 2px;
+  }
+}
+
+/* alternative layout for wide screens */
+@media screen and (min-width: 930px) {
+  body {
+    padding-right: 360px;
+    padding-right: calc(min(180px + 20%, 500px));
+  }
+  #toc {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    right: calc(50vw - 480px);
+    width: 312px;
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+  }
+  #toc h2 {
+    margin: 0;
+    padding: 0.25em 1em 1em 0;
+  }
+  #toc nav {
+    display: block;
+    height: calc(90vh - 84px);
+    bottom: 0;
+    padding: 0.5em 0 2em;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  #toc nav > ul  {
+    margin-bottom: 2em;
+  }
+  #toc ul {
+    margin: 0 0 0 4px;
+    font-size: var(--small-font-size);
+  }
+  #toc ul :is(p, li) {
+    margin: 2px 0;
+    line-height: 22px;
+  }
+  img { /* future proofing */
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* pagination */
+@media print {
+  body {
+    width: 100%;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  #n-copyright-notice {
+    border-bottom: none;
+  }
+  #toc, #n-introduction {
+    page-break-before: always;
+  }
+  #toc {
+    border-top: none;
+    padding-top: 0;
+  }
+  figure, pre, .vcard {
+    page-break-inside: avoid;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  :is(h2, h3, h4, h5, h6)+*, dd {
+    page-break-before: avoid;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 10pt;
+  }
+  table {
+    border: 1px solid #ddd;
+  }
+  td {
+    border-top: 1px solid #ddd;
+  }
+  .toplink {
+    display: none;
+  }
+}
+
+@page :first {
+  padding-top: 0;
+  @top-left {
+    content: normal;
+    border: none;
+  }
+  @top-center {
+    content: normal;
+    border: none;
+  }
+  @top-right {
+    content: normal;
+    border: none;
+  }
+}
+
+@page {
+  size: A4;
+  margin-bottom: 45mm;
+  padding-top: 20px;
+}
+
+/* Changes introduced to fix issues found during implementation */
+
+/* Separate body from document info even without intervening H1 */
+section {
+  clear: both;
+}
+
+/* Top align author divs, to avoid names without organization dropping level with org names */
+.author {
+  vertical-align: top;
+}
+
+/* Style section numbers with more space between number and title */
+.section-number {
+  padding-right: 0.5em;
+}
+
+/* Add styling for a link in the ToC that points to the top of the document */
+a.toplink {
+  float: right;
+  margin: 8px 0.5em 0;
+}
+
+/* Provide styling for table cell text alignment */
+table .text-left {
+  text-align: left;
+}
+table .text-center {
+  text-align: center;
+}
+table .text-right {
+  text-align: right;
+}
+
+/* Make the alternative author contact information look less like just another
+   author, and group it closer with the primary author contact information */
+.alternative-contact {
+  margin: 0.5em 0 0.25em 0;
+}
+address .non-ascii {
+  margin: 0 0 0 2em;
+}
+
+/* With it being possible to set tables with alignment
+  left, center, and right, { width: 100%; } does not make sense */
+table {
+  width: auto;
+}
+
+/* Avoid reference text that sits in a block with very wide left margin,
+   because of a long floating dt label.*/
+.references dd {
+  overflow: visible;
+}
+
+/* Control caption placement */
+caption {
+  caption-side: bottom;
+}
+
+/* Limit the width of the author address vcard, so names in right-to-left
+   script don't end up on the other side of the page. */
+
+address.vcard {
+  max-width: 20em;
+  margin-right: auto;
+}
+
+/* For address alignment dependent on LTR or RTL scripts */
+address div.left {
+  text-align: left;
+}
+address div.right {
+  text-align: right;
+}
+
+/* Dark mode. */
+@media (prefers-color-scheme: dark) {
+:root {
+  --background-color: #121212;
+  --text-color: #f0f0f0;
+  --title-color: #fff;
+  --link-color: #4da4f0;
+  --highlight-color: #282828;
+  --line-color: #444;
+  --pilcrow-weak: #444;
+  --pilcrow-strong: #666;
+  scrollbar-color: #777 #333;
+}
+}
+
+/* SVG Trick: a prefix match works because only black and white are allowed */
+svg :is([stroke="black"], [stroke^="#000"]) {
+  stroke: var(--text-color);
+}
+svg :is([stroke="white"], [stroke^="#fff"]) {
+  stroke: var(--background-color);
+}
+svg :is([fill="black"], [fill^="#000"], :not([fill])) {
+  fill: var(--text-color);
+}
+svg :is([fill="white"], [fill^="#fff"]) {
+  fill: var(--background-color);
+}
+</style>
+
+</head>
+<body class="xml2rfc">
+<table class="ears">
+<thead><tr>
+<td class="left">Internet-Draft</td>
+<td class="center">Tigress</td>
+<td class="right">November 2023</td>
+</tr></thead>
+<tfoot><tr>
+<td class="left">Vinokurov, et al.</td>
+<td class="center">Expires 6 May 2024</td>
+<td class="right">[Page]</td>
+</tr></tfoot>
+</table>
+<div id="external-metadata" class="document-information"></div>
+<div id="internal-metadata" class="document-information">
+<dl id="identifiers">
+<dt class="label-workgroup">Workgroup:</dt>
+<dd class="workgroup">Transfer dIGital cREdentialS Securely</dd>
+<dt class="label-internet-draft">Internet-Draft:</dt>
+<dd class="internet-draft">draft-vinokurov-tigress-http-latest</dd>
+<dt class="label-published">Published:</dt>
+<dd class="published">
+<time datetime="2023-11-03" class="published">3 November 2023</time>
+    </dd>
+<dt class="label-intended-status">Intended Status:</dt>
+<dd class="intended-status">Standards Track</dd>
+<dt class="label-expires">Expires:</dt>
+<dd class="expires"><time datetime="2024-05-06">6 May 2024</time></dd>
+<dt class="label-authors">Authors:</dt>
+<dd class="authors">
+<div class="author">
+      <div class="author-name">D. Vinokurov</div>
+<div class="org">Apple Inc</div>
+</div>
+<div class="author">
+      <div class="author-name">Y. Karandikar</div>
+<div class="org">Apple Inc</div>
+</div>
+<div class="author">
+      <div class="author-name">M. Lerch</div>
+<div class="org">Apple Inc</div>
+</div>
+<div class="author">
+      <div class="author-name">A. Pelletier</div>
+<div class="org">Apple Inc</div>
+</div>
+<div class="author">
+      <div class="author-name">N. Sha</div>
+<div class="org">Alphabet Inc</div>
+</div>
+</dd>
+</dl>
+</div>
+<h1 id="title">Transfer Digital Credentials Securely</h1>
+<section id="section-abstract">
+      <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
+<p id="section-abstract-1">Digital Credentials allow users to access Homes, Cars or Hotels using their mobile devices. Once a user has a Credential on a device, sharing it to others is a natural use case. This document describes a sharing flow that allows convenient and seamless user experience, similar to sharing other digital assets like photos or documents. The sharing process should be secure and private. This document also defines a new transport to meet unique requirements of sharing a Credential.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+</section>
+<section class="note rfcEditorRemove" id="section-note.1">
+      <h2 id="name-about-this-document">
+<a href="#name-about-this-document" class="section-name selfRef">About This Document</a>
+      </h2>
+<p id="section-note.1-1">This note is to be removed before publishing as an RFC.<a href="#section-note.1-1" class="pilcrow">¶</a></p>
+<p id="section-note.1-2">
+        The latest revision of this draft can be found at <span><a href="https://datatracker.ietf.org/doc/draft-vinokurov-tigress-http/">https://datatracker.ietf.org/doc/draft-vinokurov-tigress-http/</a></span>.
+        Status information for this document may be found at <span><a href="https://datatracker.ietf.org/doc/draft-vinokurov-tigress-http/">https://datatracker.ietf.org/doc/draft-vinokurov-tigress-http/</a></span>.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
+<p id="section-note.1-3">
+        Discussion of this document takes place on the
+        Transfer dIGital cREdentialS Securely Working Group mailing list (<span><a href="mailto:tigress@ietf.org">mailto:tigress@ietf.org</a></span>),
+        which is archived at <span><a href="https://mailarchive.ietf.org/arch/browse/tigress/">https://mailarchive.ietf.org/arch/browse/tigress/</a></span>.
+        Subscribe at <span><a href="https://www.ietf.org/mailman/listinfo/tigress/">https://www.ietf.org/mailman/listinfo/tigress/</a></span>.<a href="#section-note.1-3" class="pilcrow">¶</a></p>
+<p id="section-note.1-4">Source for this draft and an issue tracker can be found at
+        <span><a href="https://github.com/dimmyvi/tigress">https://github.com/dimmyvi/tigress</a></span>.<a href="#section-note.1-4" class="pilcrow">¶</a></p>
+</section>
+<div id="status-of-memo">
+<section id="section-boilerplate.1">
+        <h2 id="name-status-of-this-memo">
+<a href="#name-status-of-this-memo" class="section-name selfRef">Status of This Memo</a>
+        </h2>
+<p id="section-boilerplate.1-1">
+        This Internet-Draft is submitted in full conformance with the
+        provisions of BCP 78 and BCP 79.<a href="#section-boilerplate.1-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-2">
+        Internet-Drafts are working documents of the Internet Engineering Task
+        Force (IETF). Note that other groups may also distribute working
+        documents as Internet-Drafts. The list of current Internet-Drafts is
+        at <span><a href="https://datatracker.ietf.org/drafts/current/">https://datatracker.ietf.org/drafts/current/</a></span>.<a href="#section-boilerplate.1-2" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-3">
+        Internet-Drafts are draft documents valid for a maximum of six months
+        and may be updated, replaced, or obsoleted by other documents at any
+        time. It is inappropriate to use Internet-Drafts as reference
+        material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-4">
+        This Internet-Draft will expire on 6 May 2024.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="copyright">
+<section id="section-boilerplate.2">
+        <h2 id="name-copyright-notice">
+<a href="#name-copyright-notice" class="section-name selfRef">Copyright Notice</a>
+        </h2>
+<p id="section-boilerplate.2-1">
+            Copyright (c) 2023 IETF Trust and the persons identified as the
+            document authors. All rights reserved.<a href="#section-boilerplate.2-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<span><a href="https://trustee.ietf.org/license-info">https://trustee.ietf.org/license-info</a></span>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.<a href="#section-boilerplate.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="toc">
+<section id="section-toc.1">
+        <a href="#" onclick="scroll(0,0)" class="toplink">▲</a><h2 id="name-table-of-contents">
+<a href="#name-table-of-contents" class="section-name selfRef">Table of Contents</a>
+        </h2>
+<nav class="toc"><ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1">
+            <p id="section-toc.1-1.1.1" class="keepWithNext"><a href="#section-1" class="auto internal xref">1</a>.  <a href="#name-introduction" class="internal xref">Introduction</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2">
+            <p id="section-toc.1-1.2.1" class="keepWithNext"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-conventions-definitions" class="internal xref">Conventions &amp; Definitions</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.1">
+                <p id="section-toc.1-1.2.2.1.1" class="keepWithNext"><a href="#section-2.1" class="auto internal xref">2.1</a>.  <a href="#name-general-terms" class="internal xref">General Terms</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
+            <p id="section-toc.1-1.3.1"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-overview-of-sharing-process" class="internal xref">Overview of Sharing Process</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.1">
+                <p id="section-toc.1-1.3.2.1.1"><a href="#section-3.1" class="auto internal xref">3.1</a>.  <a href="#name-some-example-use-cases" class="internal xref">Some Example Use Cases</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.2">
+                <p id="section-toc.1-1.3.2.2.1"><a href="#section-3.2" class="auto internal xref">3.2</a>.  <a href="#name-credential-sharing-flow" class="internal xref">Credential Sharing Flow</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.3">
+                <p id="section-toc.1-1.3.2.3.1"><a href="#section-3.3" class="auto internal xref">3.3</a>.  <a href="#name-things-to-note" class="internal xref">Things to note</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-design-details" class="internal xref">Design Details</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.1">
+                <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="auto internal xref">4.1</a>.  <a href="#name-api-parameters" class="internal xref">API parameters:</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.2">
+                <p id="section-toc.1-1.4.2.2.1"><a href="#section-4.2" class="auto internal xref">4.2</a>.  <a href="#name-provisioning-information-st" class="internal xref">Provisioning Information Structure</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.2.2.1">
+                    <p id="section-toc.1-1.4.2.2.2.1.1"><a href="#section-4.2.1" class="auto internal xref">4.2.1</a>.  <a href="#name-provisioning-information-fo" class="internal xref">Provisioning Information Format</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.2.2.2">
+                    <p id="section-toc.1-1.4.2.2.2.2.1"><a href="#section-4.2.2" class="auto internal xref">4.2.2</a>.  <a href="#name-provisioning-information-en" class="internal xref">Provisioning Information Encryption</a></p>
+</li>
+                </ul>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.3">
+                <p id="section-toc.1-1.4.2.3.1"><a href="#section-4.3" class="auto internal xref">4.3</a>.  <a href="#name-share-url" class="internal xref">Share URL</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.3.2.1">
+                    <p id="section-toc.1-1.4.2.3.2.1.1"><a href="#section-4.3.1" class="auto internal xref">4.3.1</a>.  <a href="#name-credential-vertical-in-shar" class="internal xref">Credential Vertical in Share URL</a></p>
+</li>
+                </ul>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
+            <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-api-connection-details" class="internal xref">API connection details</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
+            <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-http-headers" class="internal xref">HTTP Headers</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1">
+                <p id="section-toc.1-1.6.2.1.1"><a href="#section-6.1" class="auto internal xref">6.1</a>.  <a href="#name-mailbox-request-id" class="internal xref">Mailbox-Request-ID</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.2">
+                <p id="section-toc.1-1.6.2.2.1"><a href="#section-6.2" class="auto internal xref">6.2</a>.  <a href="#name-mailbox-device-claim" class="internal xref">Mailbox-Device-Claim</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.3">
+                <p id="section-toc.1-1.6.2.3.1"><a href="#section-6.3" class="auto internal xref">6.3</a>.  <a href="#name-mailbox-device-attestation" class="internal xref">Mailbox-Device-Attestation</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
+            <p id="section-toc.1-1.7.1"><a href="#section-7" class="auto internal xref">7</a>.  <a href="#name-http-access-methods" class="internal xref">HTTP access methods</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.1">
+                <p id="section-toc.1-1.7.2.1.1"><a href="#section-7.1" class="auto internal xref">7.1</a>.  <a href="#name-createmailbox" class="internal xref">CreateMailbox</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.1.2.1">
+                    <p id="section-toc.1-1.7.2.1.2.1.1"><a href="#section-7.1.1" class="auto internal xref">7.1.1</a>.  <a href="#name-endpoint" class="internal xref">Endpoint</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.1.2.2">
+                    <p id="section-toc.1-1.7.2.1.2.2.1"><a href="#section-7.1.2" class="auto internal xref">7.1.2</a>.  <a href="#name-request-parameters" class="internal xref">Request Parameters:</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.1.2.3">
+                    <p id="section-toc.1-1.7.2.1.2.3.1"><a href="#section-7.1.3" class="auto internal xref">7.1.3</a>.  <a href="#name-consumes" class="internal xref">Consumes</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.1.2.4">
+                    <p id="section-toc.1-1.7.2.1.2.4.1"><a href="#section-7.1.4" class="auto internal xref">7.1.4</a>.  <a href="#name-produces" class="internal xref">Produces</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.1.2.5">
+                    <p id="section-toc.1-1.7.2.1.2.5.1"><a href="#section-7.1.5" class="auto internal xref">7.1.5</a>.  <a href="#name-request-body" class="internal xref">Request body</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.1.2.6">
+                    <p id="section-toc.1-1.7.2.1.2.6.1"><a href="#section-7.1.6" class="auto internal xref">7.1.6</a>.  <a href="#name-responses" class="internal xref">Responses</a></p>
+</li>
+                </ul>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.2">
+                <p id="section-toc.1-1.7.2.2.1"><a href="#section-7.2" class="auto internal xref">7.2</a>.  <a href="#name-updatemailbox" class="internal xref">UpdateMailbox</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.2.2.1">
+                    <p id="section-toc.1-1.7.2.2.2.1.1"><a href="#section-7.2.1" class="auto internal xref">7.2.1</a>.  <a href="#name-endpoint-2" class="internal xref">Endpoint</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.2.2.2">
+                    <p id="section-toc.1-1.7.2.2.2.2.1"><a href="#section-7.2.2" class="auto internal xref">7.2.2</a>.  <a href="#name-request-parameters-2" class="internal xref">Request Parameters</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.2.2.3">
+                    <p id="section-toc.1-1.7.2.2.2.3.1"><a href="#section-7.2.3" class="auto internal xref">7.2.3</a>.  <a href="#name-consumes-2" class="internal xref">Consumes</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.2.2.4">
+                    <p id="section-toc.1-1.7.2.2.2.4.1"><a href="#section-7.2.4" class="auto internal xref">7.2.4</a>.  <a href="#name-produces-2" class="internal xref">Produces</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.2.2.5">
+                    <p id="section-toc.1-1.7.2.2.2.5.1"><a href="#section-7.2.5" class="auto internal xref">7.2.5</a>.  <a href="#name-request-body-2" class="internal xref">Request body</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.2.2.6">
+                    <p id="section-toc.1-1.7.2.2.2.6.1"><a href="#section-7.2.6" class="auto internal xref">7.2.6</a>.  <a href="#name-responses-2" class="internal xref">Responses</a></p>
+</li>
+                </ul>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.3">
+                <p id="section-toc.1-1.7.2.3.1"><a href="#section-7.3" class="auto internal xref">7.3</a>.  <a href="#name-deletemailbox" class="internal xref">DeleteMailbox</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.3.2.1">
+                    <p id="section-toc.1-1.7.2.3.2.1.1"><a href="#section-7.3.1" class="auto internal xref">7.3.1</a>.  <a href="#name-endpoint-3" class="internal xref">Endpoint</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.3.2.2">
+                    <p id="section-toc.1-1.7.2.3.2.2.1"><a href="#section-7.3.2" class="auto internal xref">7.3.2</a>.  <a href="#name-request-parameters-3" class="internal xref">Request Parameters</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.3.2.3">
+                    <p id="section-toc.1-1.7.2.3.2.3.1"><a href="#section-7.3.3" class="auto internal xref">7.3.3</a>.  <a href="#name-responses-3" class="internal xref">Responses</a></p>
+</li>
+                </ul>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.4">
+                <p id="section-toc.1-1.7.2.4.1"><a href="#section-7.4" class="auto internal xref">7.4</a>.  <a href="#name-readdisplayinformationfromm" class="internal xref">ReadDisplayInformationFromMailbox</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.4.2.1">
+                    <p id="section-toc.1-1.7.2.4.2.1.1"><a href="#section-7.4.1" class="auto internal xref">7.4.1</a>.  <a href="#name-endpoint-4" class="internal xref">Endpoint</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.4.2.2">
+                    <p id="section-toc.1-1.7.2.4.2.2.1"><a href="#section-7.4.2" class="auto internal xref">7.4.2</a>.  <a href="#name-request-parameters-4" class="internal xref">Request Parameters</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.4.2.3">
+                    <p id="section-toc.1-1.7.2.4.2.3.1"><a href="#section-7.4.3" class="auto internal xref">7.4.3</a>.  <a href="#name-produces-3" class="internal xref">Produces</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.4.2.4">
+                    <p id="section-toc.1-1.7.2.4.2.4.1"><a href="#section-7.4.4" class="auto internal xref">7.4.4</a>.  <a href="#name-responses-4" class="internal xref">Responses</a></p>
+</li>
+                </ul>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.5">
+                <p id="section-toc.1-1.7.2.5.1"><a href="#section-7.5" class="auto internal xref">7.5</a>.  <a href="#name-readsecurecontentfrommailbo" class="internal xref">ReadSecureContentFromMailbox</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.5.2.1">
+                    <p id="section-toc.1-1.7.2.5.2.1.1"><a href="#section-7.5.1" class="auto internal xref">7.5.1</a>.  <a href="#name-endpoint-5" class="internal xref">Endpoint</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.5.2.2">
+                    <p id="section-toc.1-1.7.2.5.2.2.1"><a href="#section-7.5.2" class="auto internal xref">7.5.2</a>.  <a href="#name-request-parameters-5" class="internal xref">Request Parameters</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.5.2.3">
+                    <p id="section-toc.1-1.7.2.5.2.3.1"><a href="#section-7.5.3" class="auto internal xref">7.5.3</a>.  <a href="#name-produces-4" class="internal xref">Produces</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.5.2.4">
+                    <p id="section-toc.1-1.7.2.5.2.4.1"><a href="#section-7.5.4" class="auto internal xref">7.5.4</a>.  <a href="#name-responses-5" class="internal xref">Responses</a></p>
+</li>
+                </ul>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.6">
+                <p id="section-toc.1-1.7.2.6.1"><a href="#section-7.6" class="auto internal xref">7.6</a>.  <a href="#name-relinquishmailbox" class="internal xref">RelinquishMailbox</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.6.2.1">
+                    <p id="section-toc.1-1.7.2.6.2.1.1"><a href="#section-7.6.1" class="auto internal xref">7.6.1</a>.  <a href="#name-endpoint-6" class="internal xref">Endpoint</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.6.2.2">
+                    <p id="section-toc.1-1.7.2.6.2.2.1"><a href="#section-7.6.2" class="auto internal xref">7.6.2</a>.  <a href="#name-request-parameters-6" class="internal xref">Request Parameters</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.6.2.3">
+                    <p id="section-toc.1-1.7.2.6.2.3.1"><a href="#section-7.6.3" class="auto internal xref">7.6.3</a>.  <a href="#name-responses-6" class="internal xref">Responses</a></p>
+</li>
+                </ul>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8">
+            <p id="section-toc.1-1.8.1"><a href="#section-8" class="auto internal xref">8</a>.  <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.1">
+                <p id="section-toc.1-1.8.2.1.1"><a href="#section-8.1" class="auto internal xref">8.1</a>.  <a href="#name-initiator-recipient-privacy" class="internal xref">Initiator/Recipient privacy</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.2">
+                <p id="section-toc.1-1.8.2.2.1"><a href="#section-8.2" class="auto internal xref">8.2</a>.  <a href="#name-credentials-confidentiality" class="internal xref">Credential's confidentiality and integrity</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.3">
+                <p id="section-toc.1-1.8.2.3.1"><a href="#section-8.3" class="auto internal xref">8.3</a>.  <a href="#name-second-factor-authenticatio" class="internal xref">Second factor authentication for Recipient Credential Provisioning</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9">
+            <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
+            <p id="section-toc.1-1.10.1"><a href="#section-10" class="auto internal xref">10</a>. <a href="#name-references" class="internal xref">References</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10.2.1">
+                <p id="section-toc.1-1.10.2.1.1"><a href="#section-10.1" class="auto internal xref">10.1</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10.2.2">
+                <p id="section-toc.1-1.10.2.2.1"><a href="#section-10.2" class="auto internal xref">10.2</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11">
+            <p id="section-toc.1-1.11.1"><a href="#appendix-A" class="auto internal xref">Appendix A</a>.  <a href="#name-contributors" class="internal xref">Contributors</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12">
+            <p id="section-toc.1-1.12.1"><a href="#appendix-B" class="auto internal xref">Appendix B</a>.  <a href="#name-acknowledgments" class="internal xref">Acknowledgments</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13">
+            <p id="section-toc.1-1.13.1"><a href="#appendix-C" class="auto internal xref"></a><a href="#name-authors-addresses" class="internal xref">Authors' Addresses</a></p>
+</li>
+        </ul>
+</nav>
+</section>
+</div>
+<div id="introduction">
+<section id="section-1">
+      <h2 id="name-introduction">
+<a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
+      </h2>
+<p id="section-1-1">Mobile devices with ever increasing computational power and security capabilities are enabling various use cases. One such category includes use of mobile devices to gain access to a property that a user owns or rents or is granted access to. The cryptographic material and other data required to enable this use case is termed as Digital Credential. The process of getting a Digital Credential on a mobile device is termed as Provisioning.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">Based on type of property, various public or proprietary standards govern details of Digital Credentials used to access them. These sets of standards are termed as Verticals. The details include policies, mechanism and practices to create, maintain and use Digital Credentials and vary considerably across Verticals.<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-3">Once a user has a Digital Credential for some Vertical provisioned on their mobile device, next natural use case is to share it with others. Sharing a Credential should feel like a natural extension of regular communication methods (like instant messaging, sms, email). The user experience of sharing a Credential should be intuitive, similar to sharing other digital assets like photos or documents. The sharing process should be secure and privacy preserving.<a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-4">Credentials pose two requirements that differ from sharing other digital assets. The Initiator and Recipient devices may need to communicate back and forth to get the necessary Provisioning Information. The Provisioning information exchange must be limited to Initiator device and the first Recipient device to claim the information.<a href="#section-1-4" class="pilcrow">¶</a></p>
+<p id="section-1-5">To achieve these goals, a new transport is necessary. This document specifies an Application Programming Interface(API) for a transport protocol built using standard HTTP [RFC9110] to create such a transport termed as Relay Server. The document also defines data in JSON standard [RFC8259] to enable a uniform user experience for securely sharing Digital Credentials of various types.<a href="#section-1-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="conventions-definitions">
+<section id="section-2">
+      <h2 id="name-conventions-definitions">
+<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-conventions-definitions" class="section-name selfRef">Conventions &amp; Definitions</a>
+      </h2>
+<p id="section-2-1">The key words "<span class="bcp14">MUST</span>", "<span class="bcp14">MUST NOT</span>", "<span class="bcp14">REQUIRED</span>", "<span class="bcp14">SHALL</span>", "<span class="bcp14">SHALL NOT</span>", "<span class="bcp14">SHOULD</span>", "<span class="bcp14">SHOULD NOT</span>", "<span class="bcp14">RECOMMENDED</span>", "<span class="bcp14">NOT RECOMMENDED</span>",
+"<span class="bcp14">MAY</span>", and "<span class="bcp14">OPTIONAL</span>" in this document are to be interpreted as
+described in BCP 14 <span>[<a href="#RFC2119" class="cite xref">RFC2119</a>]</span> <span>[<a href="#RFC8174" class="cite xref">RFC8174</a>]</span> when, and only when, they
+appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶</a></p>
+<div id="general-terms">
+<section id="section-2.1">
+        <h3 id="name-general-terms">
+<a href="#section-2.1" class="section-number selfRef">2.1. </a><a href="#name-general-terms" class="section-name selfRef">General Terms</a>
+        </h3>
+<ul class="normal">
+<li class="normal" id="section-2.1-1.1">
+            <p id="section-2.1-1.1.1">Digital Credential (or simply Credential) - Cryptographic material and other data used to authorize User with an access point. The cryptographic material can also be used for mutual authentication between user device and access point.<a href="#section-2.1-1.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-2.1-1.2">
+            <p id="section-2.1-1.2.1">Digital Credential Vertical (or simply Vertical) - The public or proprietary standards that that define details of Digital Credentials for type of property accessed. The details include policy, process and mechanism to create, maintain and use Digital Credentials in the given Vertical.<a href="#section-2.1-1.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-2.1-1.3">
+            <p id="section-2.1-1.3.1">Provisioning - A process of adding a new Digital Credential to the device.<a href="#section-2.1-1.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-2.1-1.4">
+            <p id="section-2.1-1.4.1">Provisioning Entity - An entity that facilitates creation, update and termination (Lifecycle Management) of the Credential. Based on Vertical, the role of Provisioning Entity may be played by various actors in various stages of Credential lifecycle.<a href="#section-2.1-1.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-2.1-1.5">
+            <p id="section-2.1-1.5.1">Provisioning Information - data transferred from Initiator to Recipient that is both necessary and sufficient for the Recipient to Provision a Credential.<a href="#section-2.1-1.5.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-2.1-1.6">
+            <p id="section-2.1-1.6.1">Initiator - User and their device initiating a transfer of Provisioning Information to a Recipient.<a href="#section-2.1-1.6.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-2.1-1.7">
+            <p id="section-2.1-1.7.1">Recipient - User and their device that receives Provisioning Information and uses it to provision a new Credential.<a href="#section-2.1-1.7.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-2.1-1.8">
+            <p id="section-2.1-1.8.1">Relay Server - an intermediary server that provides a standardized and platform-independent way of transferring Provisioning Information between Initiator and Recipient, acting as a temporary store and forward service.<a href="#section-2.1-1.8.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-2.1-1.9">
+            <p id="section-2.1-1.9.1">Secret - a symmetric encryption key shared between an Initiator and Recipient device. It is used to encrypt Provisioning Information stored on the Relay server.<a href="#section-2.1-1.9.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</section>
+</div>
+</section>
+</div>
+<div id="overview-of-sharing-process">
+<section id="section-3">
+      <h2 id="name-overview-of-sharing-process">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-overview-of-sharing-process" class="section-name selfRef">Overview of Sharing Process</a>
+      </h2>
+<div id="some-example-use-cases">
+<section id="section-3.1">
+        <h3 id="name-some-example-use-cases">
+<a href="#section-3.1" class="section-number selfRef">3.1. </a><a href="#name-some-example-use-cases" class="section-name selfRef">Some Example Use Cases</a>
+        </h3>
+<ul class="normal">
+<li class="normal" id="section-3.1-1.1">
+            <p id="section-3.1-1.1.1">Amit owns a car that supports Digital Credentials. Being a tech enthusiast, he has the Credential provisioned on his mobile device. Amit can now use his mobile device to lock/unlock and operate his car. One Monday he is out of town and realizes that his car needs to be moved for street cleaning. He asks his neighbor Bob for help via their favorite instant messaging method. As Bob agrees, Amit shares the Digital Credential to Bob via the next instant message. Bob accepts the Credential and uses his mobile device to unlock Amit's car and drive it to the other side of street.<a href="#section-3.1-1.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.1-1.2">
+            <p id="section-3.1-1.2.1">Alice booked a room at a hotel that supports Digital Credentials. Being a frequent traveller, she has the Digital Credential provisioned on her mobile device. As her flight gets delayed, she realizes that her partner Bakari will reach the hotel first. So she shares the Digital Credential with him over email. Bakari sees the email after his flight lands and he accepts the shared Credential. On his arrival to the hotel, Bakari is able to access common areas and their room using his mobile device.<a href="#section-3.1-1.2.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</section>
+</div>
+<div id="credential-sharing-flow">
+<section id="section-3.2">
+        <h3 id="name-credential-sharing-flow">
+<a href="#section-3.2" class="section-number selfRef">3.2. </a><a href="#name-credential-sharing-flow" class="section-name selfRef">Credential Sharing Flow</a>
+        </h3>
+<p id="section-3.2-1">A simplified sharing flow is shown in the sequence diagram below. Initiator (User) uses their device to share a Credential over their preferred communication method. Recipient User accepts the Credential share invitation. Then the two devices go back and forth as necessary to transfer Provisioning Information. After the Provisioning Information transfer is complete Recipient device gets the Credential Provisioned.<a href="#section-3.2-1" class="pilcrow">¶</a></p>
+<div id="section-3.2-2">
+          <div class="alignLeft art-svg artwork" id="section-3.2-2.1">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" height="529px" preserveAspectRatio="none" version="1.1" viewBox="0 0 926 529" width="926px">
+              <defs></defs>
+              <g>
+                <rect fill="none" height="136.9966" width="608" x="169.5" y="293.6099" stroke="#000000" stroke-width="1.5"></rect>
+                <line x1="54" x2="54" y1="82.0146" y2="447.6064" stroke="black" stroke-width="0.5"></line>
+                <line x1="238.5" x2="238.5" y1="82.0146" y2="447.6064" stroke="black" stroke-width="0.5"></line>
+                <line x1="468" x2="468" y1="82.0146" y2="447.6064" stroke="black" stroke-width="0.5"></line>
+                <line x1="703.5" x2="703.5" y1="82.0146" y2="447.6064" stroke="black" stroke-width="0.5"></line>
+                <line x1="872" x2="872" y1="82.0146" y2="447.6064" stroke="black" stroke-width="0.5"></line>
+                <text fill="black" font-family="sans-serif" font-size="14" x="5" y="79.0752">Initiator User</text>
+                <ellipse cx="54" cy="13.5" fill="white" rx="8" ry="8" stroke="black" stroke-width="0.5"></ellipse>
+                <path d="M54,21.5 L54,48.5 M41,29.5 L67,29.5 M54,48.5 L41,63.5 M54,48.5 L67,63.5" fill="none" stroke="black" stroke-width="0.5"></path>
+                <text fill="black" font-family="sans-serif" font-size="14" x="5" y="460.6816">Initiator User</text>
+                <ellipse cx="54" cy="472.1211" fill="white" rx="8" ry="8" stroke="black" stroke-width="0.5"></ellipse>
+                <path d="M54,480.1211 L54,507.1211 M41,488.1211 L67,488.1211 M54,507.1211 L41,522.1211 M54,507.1211 L67,522.1211" fill="none" stroke="black" stroke-width="0.5"></path>
+                <rect fill="white" height="31.0146" rx="2.5" ry="2.5" width="119" x="179.5" y="50" stroke="black" stroke-width="0.5"></rect>
+                <text fill="black" font-family="sans-serif" font-size="14" x="186.5" y="71.0752">Initiator Device</text>
+                <rect fill="white" height="31.0146" rx="2.5" ry="2.5" width="119" x="179.5" y="446.6064" stroke="black" stroke-width="0.5"></rect>
+                <text fill="black" font-family="sans-serif" font-size="14" x="186.5" y="467.6816">Initiator Device</text>
+                <rect fill="white" height="31.0146" rx="2.5" ry="2.5" width="102" x="417" y="50" stroke="black" stroke-width="0.5"></rect>
+                <text fill="black" font-family="sans-serif" font-size="14" x="424" y="71.0752">Relay Server</text>
+                <rect fill="white" height="31.0146" rx="2.5" ry="2.5" width="102" x="417" y="446.6064" stroke="black" stroke-width="0.5"></rect>
+                <text fill="black" font-family="sans-serif" font-size="14" x="424" y="467.6816">Relay Server</text>
+                <rect fill="white" height="31.0146" rx="2.5" ry="2.5" width="127" x="640.5" y="50" stroke="black" stroke-width="0.5"></rect>
+                <text fill="black" font-family="sans-serif" font-size="14" x="647.5" y="71.0752">Recipient Device</text>
+                <rect fill="white" height="31.0146" rx="2.5" ry="2.5" width="127" x="640.5" y="446.6064" stroke="black" stroke-width="0.5"></rect>
+                <text fill="black" font-family="sans-serif" font-size="14" x="647.5" y="467.6816">Recipient Device</text>
+                <text fill="black" font-family="sans-serif" font-size="14" x="819" y="79.0752">Recipient User</text>
+                <ellipse cx="872" cy="13.5" fill="white" rx="8" ry="8" stroke="black" stroke-width="0.5"></ellipse>
+                <path d="M872,21.5 L872,48.5 M859,29.5 L885,29.5 M872,48.5 L859,63.5 M872,48.5 L885,63.5" fill="none" stroke="black" stroke-width="0.5"></path>
+                <text fill="black" font-family="sans-serif" font-size="14" x="819" y="460.6816">Recipient User</text>
+                <ellipse cx="872" cy="472.1211" fill="white" rx="8" ry="8" stroke="black" stroke-width="0.5"></ellipse>
+                <path d="M872,480.1211 L872,507.1211 M859,488.1211 L885,488.1211 M872,507.1211 L859,522.1211 M872,507.1211 L885,522.1211" fill="none" stroke="black" stroke-width="0.5"></path>
+                <polygon fill="black" points="227,109.814,237,113.814,227,117.814,231,113.814" stroke="black" stroke-width="1.0"></polygon>
+                <line x1="54" x2="233" y1="113.814" y2="113.814" stroke="black" stroke-width="1.0"></line>
+                <text fill="black" font-family="sans-serif" font-size="13" x="61" y="109.0845">Initiate Credential Share</text>
+                <polygon fill="black" points="456,139.6133,466,143.6133,456,147.6133,460,143.6133" stroke="black" stroke-width="1.0"></polygon>
+                <line x1="239" x2="462" y1="143.6133" y2="143.6133" stroke="black" stroke-width="1.0"></line>
+                <text fill="black" font-family="sans-serif" font-size="13" x="246" y="138.8838">upload Provisioning Information</text>
+                <polygon fill="black" points="692,185.2119,702,189.2119,692,193.2119,696,189.2119" stroke="black" stroke-width="1.0"></polygon>
+                <line x1="239" x2="698" y1="189.2119" y2="189.2119" stroke="black" stroke-width="1.0"></line>
+                <text fill="black" font-family="sans-serif" font-size="13" x="246" y="168.6831">Invitation to accept Credential</text>
+                <text fill="black" font-family="sans-serif" font-size="13" x="251" y="184.4824">over IM, sms, email etc</text>
+                <polygon fill="black" points="715,215.0112,705,219.0112,715,223.0112,711,219.0112" stroke="black" stroke-width="1.0"></polygon>
+                <line x1="709" x2="871" y1="219.0112" y2="219.0112" stroke="black" stroke-width="1.0"></line>
+                <text fill="black" font-family="sans-serif" font-size="13" x="721" y="214.2817">accept the Credential</text>
+                <polygon fill="black" points="479,244.8105,469,248.8105,479,252.8105,475,248.8105" stroke="black" stroke-width="1.0"></polygon>
+                <line x1="473" x2="703" y1="248.8105" y2="248.8105" stroke="black" stroke-width="1.0"></line>
+                <text fill="black" font-family="sans-serif" font-size="13" x="485" y="244.0811">request Provisioning Information</text>
+                <polygon fill="black" points="692,274.6099,702,278.6099,692,282.6099,696,278.6099" stroke="black" stroke-width="1.0"></polygon>
+                <line x1="468" x2="698" y1="278.6099" y2="278.6099" stroke="black" stroke-width="1.0"></line>
+                <text fill="black" font-family="sans-serif" font-size="13" x="475" y="273.8804">deliver Provisioning Information</text>
+                <path d="M169.5,293.6099 L245.5,293.6099 L245.5,301.4092 L235.5,311.4092 L169.5,311.4092 L169.5,293.6099" fill="white" stroke="#000000" stroke-width="1.5"></path>
+                <rect fill="none" height="136.9966" width="608" x="169.5" y="293.6099" stroke="#000000" stroke-width="1.5"></rect>
+                <text fill="black" font-family="sans-serif" font-size="13" font-weight="bold" x="184.5" y="307.6797">loop</text>
+                <text fill="black" font-family="sans-serif" font-size="11" font-weight="bold" x="260.5" y="306.6689">[Additional Data if Required]</text>
+                <polygon fill="black" points="479,329.2085,469,333.2085,479,337.2085,475,333.2085" stroke="black" stroke-width="1.0"></polygon>
+                <line x1="473" x2="703" y1="333.2085" y2="333.2085" stroke="black" stroke-width="1.0"></line>
+                <text fill="black" font-family="sans-serif" font-size="13" x="485" y="328.479">additional data request</text>
+                <polygon fill="black" points="250,359.0078,240,363.0078,250,367.0078,246,363.0078" stroke="black" stroke-width="1.0"></polygon>
+                <line x1="244" x2="467" y1="363.0078" y2="363.0078" stroke="black" stroke-width="1.0"></line>
+                <text fill="black" font-family="sans-serif" font-size="13" x="256" y="358.2783">Forward request</text>
+                <polygon fill="black" points="456,388.8071,466,392.8071,456,396.8071,460,392.8071" stroke="black" stroke-width="1.0"></polygon>
+                <line x1="239" x2="462" y1="392.8071" y2="392.8071" stroke="black" stroke-width="1.0"></line>
+                <text fill="black" font-family="sans-serif" font-size="13" x="246" y="388.0776">additional data response</text>
+                <polygon fill="black" points="692,418.6064,702,422.6064,692,426.6064,696,422.6064" stroke="black" stroke-width="1.0"></polygon>
+                <line x1="468" x2="698" y1="422.6064" y2="422.6064" stroke="black" stroke-width="1.0"></line>
+                <text fill="black" font-family="sans-serif" font-size="13" x="475" y="417.877">forward response</text>
+                <!--SRC=[VP3FQiCm38VlVWhHS_S2EGp6mY27GR7PRHTXAwl0jJFPpTZRpqxpRuFk9bkVVlfij3aA7Bh0cR6MRuda09Y0ozM99CMW1fJCbWSCUO-sDBAb2UxQtv0cZzzWICOvJPk_GAcOIhbBqQt2cy_MNds4xAoZDZLuU2ox6vYb29w5N1bZz63EAAIwjZBQD70TV4G79uaZ9uw1mqUPwwDSC9VZGavf8-Vf4d84j9Q6l4j-3n3Bkw1xFKAwf2FG1Ta3PQjMoLiKDCjqFk_Tb5wjX3wlbF9zBMqMBKUUwzwxg8znW2Vdk9xA3xIO4RW7NNPmMQu0jiMuSQvoiqXbpFAjBr6-KDokr_qpduOO4gq1LRbV0-Oc1QT-0000]-->
+  </g>
+            </svg><a href="#section-3.2-2.1" class="pilcrow">¶</a>
+</div>
+</div>
+</section>
+</div>
+<div id="things-to-note">
+<section id="section-3.3">
+        <h3 id="name-things-to-note">
+<a href="#section-3.3" class="section-number selfRef">3.3. </a><a href="#name-things-to-note" class="section-name selfRef">Things to note</a>
+        </h3>
+<ul class="normal">
+<li class="normal" id="section-3.3-1.1">
+            <p id="section-3.3-1.1.1">Initiator User and Recipient user may not be online at the same time.<a href="#section-3.3-1.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.3-1.2">
+            <p id="section-3.3-1.2.1">Users can pick any communication method for delivering invitation. Most communication methods have a goal to provide secure and private communication, but those properties can not be taken for granted.<a href="#section-3.3-1.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.3-1.3">
+            <p id="section-3.3-1.3.1">Once a Recipient User accepts the Invitation from a device, only that Recipient device <span class="bcp14">SHALL</span> get the Provisioning Information.<a href="#section-3.3-1.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.3-1.4">
+            <p id="section-3.3-1.4.1">Verticals may define a second factor to authenticate a Digital Credential Provisioned via sharing. The mechanisms and policies around the second factor are Vertical dependent and out of scope of this design.<a href="#section-3.3-1.4.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</section>
+</div>
+</section>
+</div>
+<div id="design-details">
+<section id="section-4">
+      <h2 id="name-design-details">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-design-details" class="section-name selfRef">Design Details</a>
+      </h2>
+<ul class="normal">
+<li class="normal" id="section-4-1.1">
+          <p id="section-4-1.1.1">Initiator device composes Provisioning Information and encrypts it with a Secret before storing it in a mailbox on Relay Server<a href="#section-4-1.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-4-1.2">
+          <p id="section-4-1.2.1">Initiator Device calls CreateMailbox API endpoint on a Relay server in order to create a mailbox. A unique Mailbox Identifier is generated by the Relay server using a good source of entropy (preferably hardware-based entropy).<a href="#section-4-1.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-4-1.3">
+          <p id="section-4-1.3.1">Initiator device generates a unique token - an Initiator Device Claim - and stores it to the mailbox. Device Claim allows the Initiator Device presenting it to read and write data to / from the mailbox, thus binding it to the mailbox.<a href="#section-4-1.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-4-1.4">
+          <p id="section-4-1.4.1">A mailbox has limited lifetime configured with mandatory "expiration" parameter in mailboxConfiguration. When expired, the mailbox <span class="bcp14">SHALL</span> be deleted - refer to DeleteMailbox endpoint.  Relay server <span class="bcp14">SHALL</span> be responsible to periodically check for mailboxes that are past the expiration time and delete them.<a href="#section-4-1.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-4-1.5">
+          <p id="section-4-1.5.1">Relay server builds a unique URL link to a mailbox (for example, “https://relayserver.example.com/v1/m/1234567890”) and returns it to the Initiator Device. This link is sent as invitation to Recipient Device over communication method preferred by users.<a href="#section-4-1.5.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-4-1.6">
+          <p id="section-4-1.6.1">Recipient Device, having obtained both the URL link and the Secret, is ready to read the mailbox upon user action. It generates a unique token - a Recipient Device Claim - and presents it to the Relay server to read the mailbox. The Recipient Device Claim binds the Recipient device to the mailbox.<a href="#section-4-1.6.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-4-1.7">
+          <p id="section-4-1.7.1">Relay server only allows bound devices to read or write data to the mailbox or to delete the mailbox. Note that a Relay Server may host multiple mailboxes at the same time, each bound to various pairs of Initiator and Recipient Devices. Relay Server <span class="bcp14">SHALL</span> not be able to relate the devices across various mailboxes.<a href="#section-4-1.7.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-4-1.8">
+          <p id="section-4-1.8.1">Initiator Device or Recipient Device may delete the mailbox using the DeleteMailbox API call.<a href="#section-4-1.8.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-4-1.9">
+          <p id="section-4-1.9.1">Initiator and Recipient Devices can also deposit an optional notification token for the mailbox with the Relay Server. Relay Server can notify Initiator and Recipient devices when other side has deposited data in mailbox that is ready to be read. This improves user experience over polling mechanism that the devices would have to use otherwise.<a href="#section-4-1.9.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<div id="section-4-2">
+        <div class="alignLeft art-svg artwork" id="section-4-2.1">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" height="1110px" preserveAspectRatio="none" version="1.1" viewBox="0 0 1111 1110" width="1111px">
+            <defs></defs>
+            <g>
+              <line x1="54" x2="54" y1="82.0146" y2="1029.3921" stroke="black" stroke-width="0.5"></line>
+              <line x1="347.5" x2="347.5" y1="82.0146" y2="1029.3921" stroke="black" stroke-width="0.5"></line>
+              <line x1="648" x2="648" y1="82.0146" y2="1029.3921" stroke="black" stroke-width="0.5"></line>
+              <line x1="887.5" x2="887.5" y1="82.0146" y2="1029.3921" stroke="black" stroke-width="0.5"></line>
+              <line x1="1057" x2="1057" y1="82.0146" y2="1029.3921" stroke="black" stroke-width="0.5"></line>
+              <text fill="black" font-family="sans-serif" font-size="14" x="5" y="79.0752">Initiator User</text>
+              <ellipse cx="54" cy="13.5" fill="white" rx="8" ry="8" stroke="black" stroke-width="0.5"></ellipse>
+              <path d="M54,21.5 L54,48.5 M41,29.5 L67,29.5 M54,48.5 L41,63.5 M54,48.5 L67,63.5" fill="none" stroke="black" stroke-width="0.5"></path>
+              <text fill="black" font-family="sans-serif" font-size="14" x="5" y="1042.4673">Initiator User</text>
+              <ellipse cx="54" cy="1053.9067" fill="white" rx="8" ry="8" stroke="black" stroke-width="0.5"></ellipse>
+              <path d="M54,1061.9067 L54,1088.9067 M41,1069.9067 L67,1069.9067 M54,1088.9067 L41,1103.9067 M54,1088.9067 L67,1103.9067" fill="none" stroke="black" stroke-width="0.5"></path>
+              <rect fill="white" height="31.0146" rx="2.5" ry="2.5" width="119" x="288.5" y="50" stroke="black" stroke-width="0.5"></rect>
+              <text fill="black" font-family="sans-serif" font-size="14" x="295.5" y="71.0752">Initiator Device</text>
+              <rect fill="white" height="31.0146" rx="2.5" ry="2.5" width="119" x="288.5" y="1028.3921" stroke="black" stroke-width="0.5"></rect>
+              <text fill="black" font-family="sans-serif" font-size="14" x="295.5" y="1049.4673">Initiator Device</text>
+              <rect fill="white" height="31.0146" rx="2.5" ry="2.5" width="102" x="597" y="50" stroke="black" stroke-width="0.5"></rect>
+              <text fill="black" font-family="sans-serif" font-size="14" x="604" y="71.0752">Relay Server</text>
+              <rect fill="white" height="31.0146" rx="2.5" ry="2.5" width="102" x="597" y="1028.3921" stroke="black" stroke-width="0.5"></rect>
+              <text fill="black" font-family="sans-serif" font-size="14" x="604" y="1049.4673">Relay Server</text>
+              <rect fill="white" height="31.0146" rx="2.5" ry="2.5" width="127" x="824.5" y="50" stroke="black" stroke-width="0.5"></rect>
+              <text fill="black" font-family="sans-serif" font-size="14" x="831.5" y="71.0752">Recipient Device</text>
+              <rect fill="white" height="31.0146" rx="2.5" ry="2.5" width="127" x="824.5" y="1028.3921" stroke="black" stroke-width="0.5"></rect>
+              <text fill="black" font-family="sans-serif" font-size="14" x="831.5" y="1049.4673">Recipient Device</text>
+              <text fill="black" font-family="sans-serif" font-size="14" x="1004" y="79.0752">Recipient User</text>
+              <ellipse cx="1057" cy="13.5" fill="white" rx="8" ry="8" stroke="black" stroke-width="0.5"></ellipse>
+              <path d="M1057,21.5 L1057,48.5 M1044,29.5 L1070,29.5 M1057,48.5 L1044,63.5 M1057,48.5 L1070,63.5" fill="none" stroke="black" stroke-width="0.5"></path>
+              <text fill="black" font-family="sans-serif" font-size="14" x="1004" y="1042.4673">Recipient User</text>
+              <ellipse cx="1057" cy="1053.9067" fill="white" rx="8" ry="8" stroke="black" stroke-width="0.5"></ellipse>
+              <path d="M1057,1061.9067 L1057,1088.9067 M1044,1069.9067 L1070,1069.9067 M1057,1088.9067 L1044,1103.9067 M1057,1088.9067 L1070,1103.9067" fill="none" stroke="black" stroke-width="0.5"></path>
+              <polygon fill="black" points="336,125.6133,346,129.6133,336,133.6133,340,129.6133" stroke="black" stroke-width="1.0"></polygon>
+              <line x1="54" x2="342" y1="129.6133" y2="129.6133" stroke="black" stroke-width="1.0"></line>
+              <text fill="black" font-family="sans-serif" font-size="13" x="61" y="109.0845">Share this Credential with Recipient User</text>
+              <text fill="black" font-family="sans-serif" font-size="13" x="66" y="124.8838">over communication method m_1</text>
+              <path d="M208,142.6133 L208,183.6133 L487,183.6133 L487,152.6133 L477,142.6133 L208,142.6133" fill="white" stroke="black" stroke-width="0.5"></path>
+              <path d="M477,142.6133 L477,152.6133 L487,152.6133 L477,142.6133" fill="white" stroke="black" stroke-width="0.5"></path>
+              <text fill="black" font-family="sans-serif" font-size="13" x="214" y="160.6831">Create and encrypt Provisioning</text>
+              <text fill="black" font-family="sans-serif" font-size="13" x="214" y="176.4824">Info message_1 encrypted with Secret</text>
+              <polygon fill="black" points="636,222.8105,646,226.8105,636,230.8105,640,226.8105" stroke="black" stroke-width="1.0"></polygon>
+              <line x1="348" x2="642" y1="226.8105" y2="226.8105" stroke="black" stroke-width="1.0"></line>
+              <text fill="black" font-family="sans-serif" font-size="13" x="355" y="206.2817">CreateMailbox</text>
+              <text fill="black" font-family="sans-serif" font-size="13" x="355" y="222.0811">(With DeviceClaim and Notification token)</text>
+              <polygon fill="black" points="359,252.6099,349,256.6099,359,260.6099,355,256.6099" stroke="black" stroke-width="1.0"></polygon>
+              <line x1="353" x2="647" y1="256.6099" y2="256.6099" stroke="black" stroke-width="1.0"></line>
+              <text fill="black" font-family="sans-serif" font-size="13" x="365" y="251.8804">URL link to mailbox</text>
+              <polygon fill="black" points="876,298.2085,886,302.2085,876,306.2085,880,302.2085" stroke="black" stroke-width="1.0"></polygon>
+              <line x1="348" x2="882" y1="302.2085" y2="302.2085" stroke="black" stroke-width="1.0"></line>
+              <text fill="black" font-family="sans-serif" font-size="13" x="355" y="281.6797">URL link and Secret</text>
+              <text fill="black" font-family="sans-serif" font-size="13" x="360" y="297.479">over preferred communication method m_1</text>
+              <polygon fill="black" points="899,328.0078,889,332.0078,899,336.0078,895,332.0078" stroke="black" stroke-width="1.0"></polygon>
+              <line x1="893" x2="1056" y1="332.0078" y2="332.0078" stroke="black" stroke-width="1.0"></line>
+              <text fill="black" font-family="sans-serif" font-size="13" x="905" y="327.2783">Accept the Credential</text>
+              <polygon fill="black" points="659,373.6064,649,377.6064,659,381.6064,655,377.6064" stroke="black" stroke-width="1.0"></polygon>
+              <line x1="653" x2="887" y1="377.6064" y2="377.6064" stroke="black" stroke-width="1.0"></line>
+              <text fill="black" font-family="sans-serif" font-size="13" x="665" y="357.0776">ReadSecureContentFromMailbox</text>
+              <text fill="black" font-family="sans-serif" font-size="13" x="670" y="372.877">(With DeviceClaim)</text>
+              <polygon fill="black" points="876,403.4058,886,407.4058,876,411.4058,880,407.4058" stroke="black" stroke-width="1.0"></polygon>
+              <line x1="648" x2="882" y1="407.4058" y2="407.4058" stroke="black" stroke-width="1.0"></line>
+              <text fill="black" font-family="sans-serif" font-size="13" x="655" y="402.6763">encrypted info</text>
+              <path d="M692,420.4058 L692,445.4058 L1084,445.4058 L1084,430.4058 L1074,420.4058 L692,420.4058" fill="white" stroke="black" stroke-width="0.5"></path>
+              <path d="M1074,420.4058 L1074,430.4058 L1084,430.4058 L1074,420.4058" fill="white" stroke="black" stroke-width="0.5"></path>
+              <text fill="black" font-family="sans-serif" font-size="13" x="698" y="438.4756">Decrypt with Secret to get Provisioning Info message_1</text>
+              <path d="M761,456.2051 L761,497.2051 L1014,497.2051 L1014,466.2051 L1004,456.2051 L761,456.2051" fill="white" stroke="black" stroke-width="0.5"></path>
+              <path d="M1004,456.2051 L1004,466.2051 L1014,466.2051 L1004,456.2051" fill="white" stroke="black" stroke-width="0.5"></path>
+              <text fill="black" font-family="sans-serif" font-size="13" x="767" y="474.2749">Generate Provision Info message_2</text>
+              <text fill="black" font-family="sans-serif" font-size="13" x="767" y="490.0742">encrypted with Secret</text>
+              <polygon fill="black" points="659,520.603,649,524.603,659,528.603,655,524.603" stroke="black" stroke-width="1.0"></polygon>
+              <line x1="653" x2="887" y1="524.603" y2="524.603" stroke="black" stroke-width="1.0"></line>
+              <text fill="black" font-family="sans-serif" font-size="13" x="665" y="519.8735">UpdateMailbox(encrypted info)</text>
+              <polygon fill="black" points="876,550.4023,886,554.4023,876,558.4023,880,554.4023" stroke="black" stroke-width="1.0"></polygon>
+              <line x1="648" x2="882" y1="554.4023" y2="554.4023" stroke="black" stroke-width="1.0"></line>
+              <text fill="black" font-family="sans-serif" font-size="13" x="655" y="549.6729">OK</text>
+              <polygon fill="black" points="359,580.2017,349,584.2017,359,588.2017,355,584.2017" stroke="black" stroke-width="1.0"></polygon>
+              <line x1="353" x2="647" y1="584.2017" y2="584.2017" stroke="black" stroke-width="1.0"></line>
+              <text fill="black" font-family="sans-serif" font-size="13" x="365" y="579.4722">Push Notification</text>
+              <polygon fill="black" points="636,610.001,646,614.001,636,618.001,640,614.001" stroke="black" stroke-width="1.0"></polygon>
+              <line x1="348" x2="642" y1="614.001" y2="614.001" stroke="black" stroke-width="1.0"></line>
+              <text fill="black" font-family="sans-serif" font-size="13" x="355" y="609.2715">ReadSecureContentFromMailbox</text>
+              <polygon fill="black" points="359,639.8003,349,643.8003,359,647.8003,355,643.8003" stroke="black" stroke-width="1.0"></polygon>
+              <line x1="353" x2="647" y1="643.8003" y2="643.8003" stroke="black" stroke-width="1.0"></line>
+              <text fill="black" font-family="sans-serif" font-size="13" x="365" y="639.0708">encrypted info</text>
+              <path d="M161,656.8003 L161,681.8003 L534,681.8003 L534,666.8003 L524,656.8003 L161,656.8003" fill="white" stroke="black" stroke-width="0.5"></path>
+              <path d="M524,656.8003 L524,666.8003 L534,666.8003 L524,656.8003" fill="white" stroke="black" stroke-width="0.5"></path>
+              <text fill="black" font-family="sans-serif" font-size="13" x="167" y="674.8701">Decrypt with Secret to get Provision Info message_2</text>
+              <path d="M211,692.5996 L211,733.5996 L484,733.5996 L484,702.5996 L474,692.5996 L211,692.5996" fill="white" stroke="black" stroke-width="0.5"></path>
+              <path d="M474,692.5996 L474,702.5996 L484,702.5996 L474,692.5996" fill="white" stroke="black" stroke-width="0.5"></path>
+              <text fill="black" font-family="sans-serif" font-size="13" x="217" y="710.6694">Update with Provision Info message_3</text>
+              <text fill="black" font-family="sans-serif" font-size="13" x="217" y="726.4688">encrypted with Secret</text>
+              <polygon fill="black" points="636,756.9976,646,760.9976,636,764.9976,640,760.9976" stroke="black" stroke-width="1.0"></polygon>
+              <line x1="348" x2="642" y1="760.9976" y2="760.9976" stroke="black" stroke-width="1.0"></line>
+              <text fill="black" font-family="sans-serif" font-size="13" x="355" y="756.2681">UpdateMailbox(encrypted info)</text>
+              <polygon fill="black" points="359,786.7969,349,790.7969,359,794.7969,355,790.7969" stroke="black" stroke-width="1.0"></polygon>
+              <line x1="353" x2="647" y1="790.7969" y2="790.7969" stroke="black" stroke-width="1.0"></line>
+              <text fill="black" font-family="sans-serif" font-size="13" x="365" y="786.0674">OK</text>
+              <polygon fill="black" points="876,816.5962,886,820.5962,876,824.5962,880,820.5962" stroke="black" stroke-width="1.0"></polygon>
+              <line x1="648" x2="882" y1="820.5962" y2="820.5962" stroke="black" stroke-width="1.0"></line>
+              <text fill="black" font-family="sans-serif" font-size="13" x="655" y="815.8667">Push Notification</text>
+              <polygon fill="black" points="659,846.3955,649,850.3955,659,854.3955,655,850.3955" stroke="black" stroke-width="1.0"></polygon>
+              <line x1="653" x2="887" y1="850.3955" y2="850.3955" stroke="black" stroke-width="1.0"></line>
+              <text fill="black" font-family="sans-serif" font-size="13" x="665" y="845.666">ReadSecureContentFromMailbox</text>
+              <polygon fill="black" points="876,876.1948,886,880.1948,876,884.1948,880,880.1948" stroke="black" stroke-width="1.0"></polygon>
+              <line x1="648" x2="882" y1="880.1948" y2="880.1948" stroke="black" stroke-width="1.0"></line>
+              <text fill="black" font-family="sans-serif" font-size="13" x="655" y="875.4653">encrypted info</text>
+              <path d="M593,893.1948 L593,918.1948 L943,918.1948 L943,903.1948 L933,893.1948 L593,893.1948" fill="white" stroke="black" stroke-width="0.5"></path>
+              <path d="M933,893.1948 L933,903.1948 L943,903.1948 L933,893.1948" fill="white" stroke="black" stroke-width="0.5"></path>
+              <text fill="black" font-family="sans-serif" font-size="13" x="599" y="911.2646">Decrypt with Secret for Provision Info message_3</text>
+              <polygon fill="black" points="659,941.7935,649,945.7935,659,949.7935,655,945.7935" stroke="black" stroke-width="1.0"></polygon>
+              <line x1="653" x2="887" y1="945.7935" y2="945.7935" stroke="black" stroke-width="1.0"></line>
+              <text fill="black" font-family="sans-serif" font-size="13" x="665" y="941.064">DeleteMailbox</text>
+              <polygon fill="black" points="876,971.5928,886,975.5928,876,979.5928,880,975.5928" stroke="black" stroke-width="1.0"></polygon>
+              <line x1="648" x2="882" y1="975.5928" y2="975.5928" stroke="black" stroke-width="1.0"></line>
+              <text fill="black" font-family="sans-serif" font-size="13" x="655" y="970.8633">OK</text>
+              <path d="M782,988.5928 L782,1013.5928 L993,1013.5928 L993,998.5928 L983,988.5928 L782,988.5928" fill="white" stroke="black" stroke-width="0.5"></path>
+              <path d="M983,988.5928 L983,998.5928 L993,998.5928 L983,988.5928" fill="white" stroke="black" stroke-width="0.5"></path>
+              <text fill="black" font-family="sans-serif" font-size="13" x="788" y="1006.6626">Finish Credential Provisioning</text>
+              <!--SRC=[bPH1J-Cm48Nl_XKZJY3j7c1lFI2jYa08TXUrglQ2X8mpRKOaTkIuPVdtEucRs0ukXLlgFhzvyyqaKZbZuUHMaoFPFQvQj2SWMo0-wdw8Hbf7YXgfNIoymXqfxANZOQfTO2NVO8bsjxVi3wOQVYBanyXlF1JInmkgCPv5rQSJGqxuVXc2m0oMfRG8hgGMvXOBlaooWbTo9QHsZneC9mHbwdghIKb7HaEDhZG5r4_dGcZZq6j2fz2vIZwNkW3Kohur3XwisL7BrqblM76hruQDsbPkyEbyK67XKonHMNG2-NvNG8Jmt4cFQhQlyKjIzMp-mQC-_TlTzAZcbQIwB__RE5eFmPrvGNqcXASVGvd1Qd4F5UaN5a7jJSMqxXvD9EvA-B0mi6eihj4orW-exIUKkF9SVYg5ZCgL6CsbYpj8GlSBb0KNtbgS6-tulsjhwW03tj4u2rr7ZGJkn0E9nnaM3TZ6pp2QJOTfW-bO9qCDuplaUuCQRRSeeqjgSS6Q8vkHOxDgYh0PfscBUGn_xl9ByR1josI5H7OLFnf6rdU2FVyIVORwb5T0dlVqQBpb0PCVnw5d8NoIUaGXeHvDuptrhxu1NzvrLdyxkl9hxlSWj00d5_OAAnpX75p1_5jopPzn1X9zgPDlwLZuFm00]-->
+  </g>
+          </svg><a href="#section-4-2.1" class="pilcrow">¶</a>
+</div>
+</div>
+<div id="api-parameters">
+<section id="section-4.1">
+        <h3 id="name-api-parameters">
+<a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-api-parameters" class="section-name selfRef">API parameters:</a>
+        </h3>
+<ul class="normal">
+<li class="normal" id="section-4.1-1.1">
+            <p id="section-4.1-1.1.1">Device Claim - a unique token allowing the caller to read from / write data to the mailbox. Exactly one Initiator Device and one Recipient Device <span class="bcp14">SHOULD</span> be able to read from / write secure payload to the mailbox. Initiator Device provides a Device Claim in order to create a mailbox. When the Relay server, having received a request from the Initiator Device, creates a mailbox, it binds this Initiator's Device Claim to the mailbox. When the Recipient Device first reads data from the mailbox it presents its Device Claim to the Relay Server, which binds the mailbox to the given Recipient Device. Thus, both Initiator and Recipient devices are bound to the mailbox (allowed to read from / write to it). Only Initiator and Recipient devices that present valid Device Claims are allowed to send subsequent read/update/delete calls to the mailbox. The value <span class="bcp14">SHALL</span> be a unique UUID <span>[<a href="#RFC4122" class="cite xref">RFC4122</a>]</span>. Initiator and Recipient <span class="bcp14">MUST</span> use different values for Device Claim. Implementation <span class="bcp14">SHOULD</span> assign unique values for new mailboxes (avoid re-using values).<a href="#section-4.1-1.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.1-1.2">
+            <p id="section-4.1-1.2.1">Notification Token - a short or long-lived unique token stored by the Initiator or Recipient Device in a mailbox on the Relay server, which allows Relay server to send a push notification to the Initiator or Recipient Device, informing them of updates in the mailbox.<a href="#section-4.1-1.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.1-1.3">
+            <p id="section-4.1-1.3.1">MailboxIdentifier - a unique identifier for the given mailbox, generated by the Relay server at the time of mailbox creation. The value is a UUID <span>[<a href="#RFC4122" class="cite xref">RFC4122</a>]</span>.<a href="#section-4.1-1.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</section>
+</div>
+<div id="provisioning-information-structure">
+<section id="section-4.2">
+        <h3 id="name-provisioning-information-st">
+<a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-provisioning-information-st" class="section-name selfRef">Provisioning Information Structure</a>
+        </h3>
+<p id="section-4.2-1">The Provisioning Information is the data transferred via the Relay Server between the Initiator Device and Recipient Device. Each use case defines its own specialized Provisioning Information format, but all formats must at least adhere to the following structure. Formats are free to define new top level keys, so clients shouldn't be surprised if a message of an unexpected format has specialized top level keys.<a href="#section-4.2-1" class="pilcrow">¶</a></p>
+<table class="center" id="table-1">
+          <caption><a href="#table-1" class="selfRef">Table 1</a></caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Key</th>
+              <th class="text-left" rowspan="1" colspan="1">Type</th>
+              <th class="text-left" rowspan="1" colspan="1">Required</th>
+              <th class="text-left" rowspan="1" colspan="1">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">format</td>
+              <td class="text-left" rowspan="1" colspan="1">String</td>
+              <td class="text-left" rowspan="1" colspan="1">Yes</td>
+              <td class="text-left" rowspan="1" colspan="1">The Provisioning Information format that the message follows. This is used by the Initiator Device and Recipient Device to know how to parse the message.</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">content</td>
+              <td class="text-left" rowspan="1" colspan="1">Dictionary</td>
+              <td class="text-left" rowspan="1" colspan="1">Yes</td>
+              <td class="text-left" rowspan="1" colspan="1">A dictionary of content to be used for the credential transfer. See each format's specification for exact fields.</td>
+            </tr>
+          </tbody>
+        </table>
+<div id="provisioning-information-format">
+<section id="section-4.2.1">
+          <h4 id="name-provisioning-information-fo">
+<a href="#section-4.2.1" class="section-number selfRef">4.2.1. </a><a href="#name-provisioning-information-fo" class="section-name selfRef">Provisioning Information Format</a>
+          </h4>
+<p id="section-4.2.1-1">Each Provisioning Information format must have the message structure defined in an external specification.<a href="#section-4.2.1-1" class="pilcrow">¶</a></p>
+<table class="center" id="table-2">
+            <caption><a href="#table-2" class="selfRef">Table 2</a></caption>
+<thead>
+              <tr>
+                <th class="text-left" rowspan="1" colspan="1">Format Type</th>
+                <th class="text-left" rowspan="1" colspan="1">Spec Link</th>
+                <th class="text-left" rowspan="1" colspan="1">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">digitalwallet.carkey.ccc</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <span>[<a href="#CCC-Digital-Key-30" class="cite xref">CCC-Digital-Key-30</a>]</span>
+</td>
+                <td class="text-left" rowspan="1" colspan="1">A digital wallet Provisioning Information for sharing a car key that follows the Car Connectivity Consortium specification.</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">digitalwallet.generic.authorizationToken</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <span>[<a href="#ISO-18013-5" class="cite xref">ISO-18013-5</a>]</span>
+</td>
+                <td class="text-left" rowspan="1" colspan="1">A digital wallet Provisioning Information for sharing a generic pass that relies solely on an authorization token.</td>
+              </tr>
+            </tbody>
+          </table>
+<span id="name-provisioning-information-for"></span><div id="provisioning-info-format">
+<figure id="figure-1">
+            <div class="alignLeft art-text artwork" id="section-4.2.1-3.1">
+<pre>
+{
+   "format" : "digitalwallet.carkey.ccc",
+   "content": {
+      // Format specific fields
+   }
+}
+</pre>
+</div>
+<figcaption><a href="#figure-1" class="selfRef">Figure 1</a>:
+<a href="#name-provisioning-information-for" class="selfRef">Provisioning Information format</a>
+            </figcaption></figure>
+</div>
+</section>
+</div>
+<div id="provisioning-information-encryption">
+<section id="section-4.2.2">
+          <h4 id="name-provisioning-information-en">
+<a href="#section-4.2.2" class="section-number selfRef">4.2.2. </a><a href="#name-provisioning-information-en" class="section-name selfRef">Provisioning Information Encryption</a>
+          </h4>
+<p id="section-4.2.2-1">Provisioning Information will be stored on the Relay Server encrypted. The Secret used to encrypt the Provisioning Information should be given to the Recipient Device via a "Share URL" (a URL link to a mailbox). The encrypted payload should be a data structure having the following key-value pairs:<a href="#section-4.2.2-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-4.2.2-2.1">
+              <p id="section-4.2.2-2.1.1">"type" (String, Required) - the encryption algorithm and mode used.<a href="#section-4.2.2-2.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-4.2.2-2.2">
+              <p id="section-4.2.2-2.2.1">"data" (String, Required) - Base64 encoded binary value of the encrypted Provisioning Information, aka the ciphertext.<a href="#section-4.2.2-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+<p id="section-4.2.2-3">Please refer to <span>[<a href="#RFC5116" class="cite xref">RFC5116</a>]</span> for the details of the encryption algorithm.<a href="#section-4.2.2-3" class="pilcrow">¶</a></p>
+<p id="section-4.2.2-4">The following algorithms and modes are mandatory to implement:<a href="#section-4.2.2-4" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-4.2.2-5.1">
+              <p id="section-4.2.2-5.1.1">"AEAD_AES_128_GCM": AES symmetric encryption algorithm with key length 128 bits, in GCM mode with no padding.  Initialization Vector (IV) has the length of 96 bits randomly generated and tag length of 128 bits.<a href="#section-4.2.2-5.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-4.2.2-5.2">
+              <p id="section-4.2.2-5.2.1">"AEAD_AES_256_GCM": AES symmetric encryption algorithm with key length 256 bits, in GCM mode with no padding.  Initialization Vector (IV) has the length of 96 bits randomly generated and tag length of 128 bits.<a href="#section-4.2.2-5.2.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+<span id="name-secure-payload-format-examp"></span><div id="secure-payload-format">
+<figure id="figure-2">
+            <div class="alignLeft art-text artwork" id="section-4.2.2-6.1">
+<pre>
+{
+    "type" : "AEAD_AES_128_GCM",
+    "data" : "IV  ciphertext  tag"
+}
+</pre>
+</div>
+<figcaption><a href="#figure-2" class="selfRef">Figure 2</a>:
+<a href="#name-secure-payload-format-examp" class="selfRef">Secure Payload Format example</a>
+            </figcaption></figure>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="share-url">
+<section id="section-4.3">
+        <h3 id="name-share-url">
+<a href="#section-4.3" class="section-number selfRef">4.3. </a><a href="#name-share-url" class="section-name selfRef">Share URL</a>
+        </h3>
+<p id="section-4.3-1">A "Share URL" is the url a Initiator Device sends to the Recipient Device allowing it to retrieve the Provisioning Information stored on the Relay Server. A Share URL is made up of the following fields:<a href="#section-4.3-1" class="pilcrow">¶</a></p>
+<span id="name-share-url-example"></span><div id="share-url-example">
+<figure id="figure-3">
+          <div class="alignLeft art-text artwork" id="section-4.3-2.1">
+<pre>
+https://{RelayServerHost}/v{ApiVersion}/m/{MailboxIdentifier}?v={CredentialVertical}#{Secret}
+</pre>
+</div>
+<figcaption><a href="#figure-3" class="selfRef">Figure 3</a>:
+<a href="#name-share-url-example" class="selfRef">Share URL example</a>
+          </figcaption></figure>
+</div>
+<table class="center" id="table-3">
+          <caption><a href="#table-3" class="selfRef">Table 3</a></caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Field</th>
+              <th class="text-left" rowspan="1" colspan="1">Location</th>
+              <th class="text-left" rowspan="1" colspan="1">Required</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">RelayServerHost</td>
+              <td class="text-left" rowspan="1" colspan="1">URL Host</td>
+              <td class="text-left" rowspan="1" colspan="1">Yes</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">ApiVersion</td>
+              <td class="text-left" rowspan="1" colspan="1">URI Path Parameter</td>
+              <td class="text-left" rowspan="1" colspan="1">Yes</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">MailboxIdentifier</td>
+              <td class="text-left" rowspan="1" colspan="1">URI Path Parameter</td>
+              <td class="text-left" rowspan="1" colspan="1">Yes</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">CredentialVertical</td>
+              <td class="text-left" rowspan="1" colspan="1">Query Parameter</td>
+              <td class="text-left" rowspan="1" colspan="1">No</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Secret</td>
+              <td class="text-left" rowspan="1" colspan="1">Fragment</td>
+              <td class="text-left" rowspan="1" colspan="1">No</td>
+            </tr>
+          </tbody>
+        </table>
+<div id="credential-vertical-in-share-url">
+<section id="section-4.3.1">
+          <h4 id="name-credential-vertical-in-shar">
+<a href="#section-4.3.1" class="section-number selfRef">4.3.1. </a><a href="#name-credential-vertical-in-shar" class="section-name selfRef">Credential Vertical in Share URL</a>
+          </h4>
+<p id="section-4.3.1-1">When a user interacts with a share URL on a Recipient Device it can be helpful to know what Credential Vertical this share is for. This is particularly important if the Recipient Device has multiple applications that can handle a share URL. For example, a Recipient Device might want to handle a general access share in their wallet app, but handle car key shares in a specific car application.<a href="#section-4.3.1-1" class="pilcrow">¶</a></p>
+<p id="section-4.3.1-2">To properly route a share URL, the Initiator can include the Credential Vertical in the share URL as a query parameter. The Credential Vertical can't be included in the encrypted payload because the Recipient Device might need to open the right application before retrieving the secure payload. The Credential Vertical query parameter uses the "v" key and supports the below types. If no Credential Vertical is provided it will be assumed that this is a general access share URL.<a href="#section-4.3.1-2" class="pilcrow">¶</a></p>
+<table class="center" id="table-4">
+            <caption><a href="#table-4" class="selfRef">Table 4</a></caption>
+<thead>
+              <tr>
+                <th class="text-left" rowspan="1" colspan="1">Vertical</th>
+                <th class="text-left" rowspan="1" colspan="1">Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">General Access</td>
+                <td class="text-left" rowspan="1" colspan="1">a or <em>None</em>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">Home Key</td>
+                <td class="text-left" rowspan="1" colspan="1">h</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">Car Key</td>
+                <td class="text-left" rowspan="1" colspan="1">c</td>
+              </tr>
+            </tbody>
+          </table>
+<span id="name-car-key-share-url-example"></span><div id="car-key-share-url-example">
+<figure id="figure-4">
+            <div class="alignLeft art-text artwork" id="section-4.3.1-4.1">
+<pre>
+https://relayserver.example.com/v1/m/2bba630e-519b-11ec-bf63-0242ac130002?v=c#hXlr6aRC7KgJpOLTNZaLsw==
+</pre>
+</div>
+<figcaption><a href="#figure-4" class="selfRef">Figure 4</a>:
+<a href="#name-car-key-share-url-example" class="selfRef">Car Key Share URL example</a>
+            </figcaption></figure>
+</div>
+<p id="section-4.3.1-5">The Credential Vertical query parameter can be added to the share URL by the Initiator Device when constructing the full share URL that is going to be sent to the Recipient Device.<a href="#section-4.3.1-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="api-connection-details">
+<section id="section-5">
+      <h2 id="name-api-connection-details">
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-api-connection-details" class="section-name selfRef">API connection details</a>
+      </h2>
+<p id="section-5-1">The Relay server API endpoint <span class="bcp14">MUST</span> be accessed over HTTP using an https URI <span>[<a href="#RFC2818" class="cite xref">RFC2818</a>]</span> and <span class="bcp14">SHOULD</span> use the default https port.
+Request and response bodies <span class="bcp14">SHALL</span> be formatted as either JSON or HTML (based on the API endpoint). The communication protocol used for all interfaces <span class="bcp14">SHALL</span> be HTTPs.
+All Strings <span class="bcp14">SHOULD</span> be UTF-8 encoded (Unicode Normalization Form C (NFC)).
+An API version <span class="bcp14">SHOULD</span> be included in the URI for all interfaces. The version at the time of this document's latest update is v1. The version <span class="bcp14">SHALL</span> be incremented by 1 for major API changes or backward incompatible iterations on existing APIs.<a href="#section-5-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="http-headers">
+<section id="section-6">
+      <h2 id="name-http-headers">
+<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-http-headers" class="section-name selfRef">HTTP Headers</a>
+      </h2>
+<div id="mailbox-request-id">
+<section id="section-6.1">
+        <h3 id="name-mailbox-request-id">
+<a href="#section-6.1" class="section-number selfRef">6.1. </a><a href="#name-mailbox-request-id" class="section-name selfRef">Mailbox-Request-ID</a>
+        </h3>
+<p id="section-6.1-1">All requests to and from Relay server will have an HTTP header "Mailbox-Request-ID". The corresponding response to the API will have the same HTTP header, which <span class="bcp14">SHALL</span> echo the value in the request header. This is used to identify the request associated to the response for a particular API request and response pair. The value <span class="bcp14">SHOULD</span> be a UUID <span>[<a href="#RFC4122" class="cite xref">RFC4122</a>]</span>.
+The request originator <span class="bcp14">SHALL</span> match the value of this header in the response with the one sent in the request. If response is not received, caller may retry sending the request with the same value of "Mailbox-Request-ID".
+Relay server <span class="bcp14">SHOULD</span> store the value of the last successfully processed "Mailbox-Request-ID" for each device based on the caller's Device Claim.
+A key-value pair of "Device Claim" to "Mailbox-Request-ID" is suggested to store the last successfully processed request for each device.
+In case of receiving a request with duplicated "Mailbox-Request-ID", Relay <span class="bcp14">SHOULD</span> respond to the caller with status code 201, ignoring the duplicate request body content.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="mailbox-device-claim">
+<section id="section-6.2">
+        <h3 id="name-mailbox-device-claim">
+<a href="#section-6.2" class="section-number selfRef">6.2. </a><a href="#name-mailbox-device-claim" class="section-name selfRef">Mailbox-Device-Claim</a>
+        </h3>
+<p id="section-6.2-1">All requests to CreateMailbox, ReadSecureContentFromMailbox and UpdateMailbox endpoints <span class="bcp14">MUST</span> contain this header. The value represents "Device Claim" (refer to Terminology)<a href="#section-6.2-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="mailbox-device-attestation">
+<section id="section-6.3">
+        <h3 id="name-mailbox-device-attestation">
+<a href="#section-6.3" class="section-number selfRef">6.3. </a><a href="#name-mailbox-device-attestation" class="section-name selfRef">Mailbox-Device-Attestation</a>
+        </h3>
+<p id="section-6.3-1">Request to CreateMailbox <span class="bcp14">MAY</span> contain this header. The value represents a Device Attestation (String, Optional) - optional remote OEM device proprietary attestation data<a href="#section-6.3-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="http-access-methods">
+<section id="section-7">
+      <h2 id="name-http-access-methods">
+<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-http-access-methods" class="section-name selfRef">HTTP access methods</a>
+      </h2>
+<div id="createmailbox">
+<section id="section-7.1">
+        <h3 id="name-createmailbox">
+<a href="#section-7.1" class="section-number selfRef">7.1. </a><a href="#name-createmailbox" class="section-name selfRef">CreateMailbox</a>
+        </h3>
+<p id="section-7.1-1">An application running on a remote device can invoke this API on Relay Server to create a mailbox and store secure data content to it (encrypted data specific to a provisioning partner). MailboxIdentifier is created by the Relay server as an UUID <span>[<a href="#RFC4122" class="cite xref">RFC4122</a>]</span>, using cryptographic entropy. A URL to the created mailbox to be returned to the caller in the response.<a href="#section-7.1-1" class="pilcrow">¶</a></p>
+<div id="endpoint">
+<section id="section-7.1.1">
+          <h4 id="name-endpoint">
+<a href="#section-7.1.1" class="section-number selfRef">7.1.1. </a><a href="#name-endpoint" class="section-name selfRef">Endpoint</a>
+          </h4>
+<p id="section-7.1.1-1">POST  /{version}/m<a href="#section-7.1.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="request-parameters">
+<section id="section-7.1.2">
+          <h4 id="name-request-parameters">
+<a href="#section-7.1.2" class="section-number selfRef">7.1.2. </a><a href="#name-request-parameters" class="section-name selfRef">Request Parameters:</a>
+          </h4>
+<p id="section-7.1.2-1">Path parameters<a href="#section-7.1.2-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.1.2-2.1">
+              <p id="section-7.1.2-2.1.1">version (String, Required) - the version of the API. At the time of writing this document, “v1”.<a href="#section-7.1.2-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+<p id="section-7.1.2-3">Header parameters<a href="#section-7.1.2-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.1.2-4.1">
+              <p id="section-7.1.2-4.1.1">Mailbox-Device-Attestation (String, Optional) - optional remote OEM device proprietary attestation data.<a href="#section-7.1.2-4.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-7.1.2-4.2">
+              <p id="section-7.1.2-4.2.1">Mailbox-Device-Claim (String, UUID, Required) - Device Claim (refer to Terminology).<a href="#section-7.1.2-4.2.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+</section>
+</div>
+<div id="consumes">
+<section id="section-7.1.3">
+          <h4 id="name-consumes">
+<a href="#section-7.1.3" class="section-number selfRef">7.1.3. </a><a href="#name-consumes" class="section-name selfRef">Consumes</a>
+          </h4>
+<p id="section-7.1.3-1">This API call consumes the following media types via the Content-Type request header: <code>application/json</code><a href="#section-7.1.3-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="produces">
+<section id="section-7.1.4">
+          <h4 id="name-produces">
+<a href="#section-7.1.4" class="section-number selfRef">7.1.4. </a><a href="#name-produces" class="section-name selfRef">Produces</a>
+          </h4>
+<p id="section-7.1.4-1">This API call produces the following media types via the Content-Type response header: <code>application/json</code><a href="#section-7.1.4-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="request-body">
+<section id="section-7.1.5">
+          <h4 id="name-request-body">
+<a href="#section-7.1.5" class="section-number selfRef">7.1.5. </a><a href="#name-request-body" class="section-name selfRef">Request body</a>
+          </h4>
+<p id="section-7.1.5-1">Request body is a complex structure, including the following fields:<a href="#section-7.1.5-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.1.5-2.1">
+              <p id="section-7.1.5-2.1.1">payload (Object, Required) - for the purposes of Tigress API, this is a data structure, describing Provisioning Information specific to Credential Provider. It consists of the following 2 key-value pairs:<a href="#section-7.1.5-2.1.1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-7.1.5-2.1.2">
+<li id="section-7.1.5-2.1.2.1">
+                  <p id="section-7.1.5-2.1.2.1.1">"type": "AEAD_AES_128_GCM" (refer to Encryption Format section).<a href="#section-7.1.5-2.1.2.1.1" class="pilcrow">¶</a></p>
+</li>
+                <li id="section-7.1.5-2.1.2.2">
+                  <p id="section-7.1.5-2.1.2.2.1">"data": BASE64-encoded binary value of ciphertext.<a href="#section-7.1.5-2.1.2.2.1" class="pilcrow">¶</a></p>
+</li>
+              </ol>
+</li>
+            <li class="normal" id="section-7.1.5-2.2">
+              <p id="section-7.1.5-2.2.1">displayInformation (Object, Required) - for the purposes of the Tigress API, this is a data structure. It allows an application running on a receiving device to build a visual representation of the credential to show to user.
+The data structure contains the following fields:<a href="#section-7.1.5-2.2.1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-7.1.5-2.2.2">
+<li id="section-7.1.5-2.2.2.1">
+                  <p id="section-7.1.5-2.2.2.1.1">title (String, Required) - the title of the credential (e.g. "Car Key")<a href="#section-7.1.5-2.2.2.1.1" class="pilcrow">¶</a></p>
+</li>
+                <li id="section-7.1.5-2.2.2.2">
+                  <p id="section-7.1.5-2.2.2.2.1">description (String, Required) - a brief description of the credential (e.g. "a key to my personal car")<a href="#section-7.1.5-2.2.2.2.1" class="pilcrow">¶</a></p>
+</li>
+                <li id="section-7.1.5-2.2.2.3">
+                  <p id="section-7.1.5-2.2.2.3.1">imageURL (String, Required) - a link to a picture representing the credential visually.<a href="#section-7.1.5-2.2.2.3.1" class="pilcrow">¶</a></p>
+</li>
+              </ol>
+</li>
+            <li class="normal" id="section-7.1.5-2.3">
+              <p id="section-7.1.5-2.3.1">notificationToken (Object, Optional) - optional notification token used to notify an appropriate remote device that the mailbox data has been updated. Data structure includes the following (if notificationToken is provided it should include both fields):<a href="#section-7.1.5-2.3.1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-7.1.5-2.3.2">
+<li id="section-7.1.5-2.3.2.1">
+                  <p id="section-7.1.5-2.3.2.1.1">type (String, Required) - notification token name. Used to define which Push Notification System to be used to notify appropriate remote device of a mailbox data update. (E.g. "com.apple.apns" for APNS)<a href="#section-7.1.5-2.3.2.1.1" class="pilcrow">¶</a></p>
+</li>
+                <li id="section-7.1.5-2.3.2.2">
+                  <p id="section-7.1.5-2.3.2.2.1">tokenData (String, Required) - notification token data (data encoded based on specific device OEM notification service rules - e.g. HEX-encoded or Base64-encoded) - application-specific - refer to appropriate Push Notification System specification.<a href="#section-7.1.5-2.3.2.2.1" class="pilcrow">¶</a></p>
+</li>
+              </ol>
+</li>
+            <li class="normal" id="section-7.1.5-2.4">
+              <p id="section-7.1.5-2.4.1">mailboxConfiguration (Object, Optional) - optional mailbox configuration, defines access rights to the mailbox, mailbox expiration time. Required at the time of the mailbox creation. OEM device may provide this data in the request, Relay server shall define a default configuration, if it is not provided in the incoming request. Data structure includes the following:<a href="#section-7.1.5-2.4.1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-7.1.5-2.4.2">
+<li id="section-7.1.5-2.4.2.1">
+                  <p id="section-7.1.5-2.4.2.1.1">accessRights (String, Optional) - optional access rights to the mailbox for Initiator and  Recipient devices. Default access to the mailbox is Read and Delete.
+Value is defined as a combination of the following values: "R" - for read access, "W" - for write access, "D" - for delete access. Example" "RD" - allows to read from the mailbox and delete it.<a href="#section-7.1.5-2.4.2.1.1" class="pilcrow">¶</a></p>
+</li>
+                <li id="section-7.1.5-2.4.2.2">
+                  <p id="section-7.1.5-2.4.2.2.1">expiration (String, Required) - Mailbox expiration time in "YYYY-MM-DDThh:mm:ssZ" format (UTC time zone) <span>[<a href="#RFC3339" class="cite xref">RFC3339</a>]</span>. Mailbox has limited livetime. Once expired, it <span class="bcp14">SHALL</span> be deleted - refer to DeleteMailbox endpoint. Relay server <span class="bcp14">SHOULD</span> periodically check for expired mailboxes and delete them.<a href="#section-7.1.5-2.4.2.2.1" class="pilcrow">¶</a></p>
+</li>
+              </ol>
+</li>
+          </ul>
+<span id="name-apple-push-token-example"></span><div id="apple-push-token">
+<figure id="figure-5">
+            <div class="alignLeft art-text artwork" id="section-7.1.5-3.1">
+<pre>
+{
+   "notificationToken": {
+        "type":"com.apple.apns",
+        "tokenData":"APNS1234...QW"
+    }
+}
+</pre>
+</div>
+<figcaption><a href="#figure-5" class="selfRef">Figure 5</a>:
+<a href="#name-apple-push-token-example" class="selfRef">Apple Push Token Example</a>
+            </figcaption></figure>
+</div>
+<span id="name-create-mailbox-request-exam"></span><div id="create-mailbox-request">
+<figure id="figure-6">
+            <div class="alignLeft art-text artwork" id="section-7.1.5-4.1">
+<pre>
+{
+    "displayInformation" : {
+        "title" : "Hotel Pass",
+        "description" : "Some Hotel Pass",
+        "imageURL" : "https://example.com/sharingImage"
+    },
+    "payload" : {
+        "type": "AEAD_AES_128_GCM",
+        "data": "FDEC...987654321"
+    },
+    "notificationToken" : {
+        "type" : "com.apple.apns",
+        "tokenData" : “APNS...1234"
+    },
+    "mailboxConfiguration" : {
+        "accessRights" : "RWD",
+        "expiration" : "2022-02-08T14:57:22Z"
+    }
+}
+</pre>
+</div>
+<figcaption><a href="#figure-6" class="selfRef">Figure 6</a>:
+<a href="#name-create-mailbox-request-exam" class="selfRef">Create Mailbox Request Example</a>
+            </figcaption></figure>
+</div>
+</section>
+</div>
+<div id="responses">
+<section id="section-7.1.6">
+          <h4 id="name-responses">
+<a href="#section-7.1.6" class="section-number selfRef">7.1.6. </a><a href="#name-responses" class="section-name selfRef">Responses</a>
+          </h4>
+<p id="section-7.1.6-1"><code>200</code>
+Status: “200” (OK)<a href="#section-7.1.6-1" class="pilcrow">¶</a></p>
+<p id="section-7.1.6-2">ResponseBody:<a href="#section-7.1.6-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.1.6-3.1">
+              <p id="section-7.1.6-3.1.1">urlLink (String, Required) - a full URL link to the mailbox including fully qualified domain name and mailbox Identifier. Refer to "Share URL" section for details.<a href="#section-7.1.6-3.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-7.1.6-3.2">
+              <p id="section-7.1.6-3.2.1">isPushNotificationSupported (boolean, Required) - indicates whether push notification is supported or not. The device uses this field to decide whether it should listen on the push topic or do long-polling.<a href="#section-7.1.6-3.2.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+<span id="name-create-mailbox-response-exa"></span><div id="create-mailbox-response">
+<figure id="figure-7">
+            <div class="alignLeft art-text artwork" id="section-7.1.6-4.1">
+<pre>
+{
+    "urlLink":"https://relayserver.example.com/m/12345678-9...A-BCD",
+    "isPushNotificationSupported":true
+}
+</pre>
+</div>
+<figcaption><a href="#figure-7" class="selfRef">Figure 7</a>:
+<a href="#name-create-mailbox-response-exa" class="selfRef">Create Mailbox Response Example</a>
+            </figcaption></figure>
+</div>
+<p id="section-7.1.6-5"><code>201</code>
+Status: “201” (Created) - response to a duplicated request (duplicated "Mailbox-Request-ID"). Relay server <span class="bcp14">SHALL</span> respond to duplicated requests with 201 without creating a new mailbox. "Mailbox-Request-ID" passed in the first CreateMailbox request's header <span class="bcp14">SHOULD</span> be stored by the Relay server and compared to the same value in the subsequent requests to identify duplicated requests. If duplicate is found, Relay <span class="bcp14">SHALL</span> not create a new mailbox, but respond with 201 instead. The value of "Mailbox-Request-ID" of the last successfully completed request <span class="bcp14">SHOULD</span> be stored based on the Device Claim passed by the caller.<a href="#section-7.1.6-5" class="pilcrow">¶</a></p>
+<p id="section-7.1.6-6"><code>400</code>
+Bad Request - invalid request has been passed (can not parse or required fields missing).<a href="#section-7.1.6-6" class="pilcrow">¶</a></p>
+<p id="section-7.1.6-7"><code>401</code>
+Unauthorized - calling device is not authorized to create a mailbox. E.g. a device presented an invalid device claim or device attestation.<a href="#section-7.1.6-7" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="updatemailbox">
+<section id="section-7.2">
+        <h3 id="name-updatemailbox">
+<a href="#section-7.2" class="section-number selfRef">7.2. </a><a href="#name-updatemailbox" class="section-name selfRef">UpdateMailbox</a>
+        </h3>
+<p id="section-7.2-1">An application running on a remote device can invoke this API on Relay Server to update secure data content in an existing mailbox (encrypted data specific to a Provisioning Partner). The update effectively overwrites the secure payload previously stored in the mailbox.<a href="#section-7.2-1" class="pilcrow">¶</a></p>
+<div id="endpoint-1">
+<section id="section-7.2.1">
+          <h4 id="name-endpoint-2">
+<a href="#section-7.2.1" class="section-number selfRef">7.2.1. </a><a href="#name-endpoint-2" class="section-name selfRef">Endpoint</a>
+          </h4>
+<p id="section-7.2.1-1">PUT  /{version}/m/{mailboxIdentifier}<a href="#section-7.2.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="request-parameters-1">
+<section id="section-7.2.2">
+          <h4 id="name-request-parameters-2">
+<a href="#section-7.2.2" class="section-number selfRef">7.2.2. </a><a href="#name-request-parameters-2" class="section-name selfRef">Request Parameters</a>
+          </h4>
+<p id="section-7.2.2-1">Path parameters:<a href="#section-7.2.2-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.2.2-2.1">
+              <p id="section-7.2.2-2.1.1">version (String, Required) - the version of the API. At the time of writing this document, “v1”.<a href="#section-7.2.2-2.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-7.2.2-2.2">
+              <p id="section-7.2.2-2.2.1">mailboxIdentifier(String, Required) - MailboxIdentifier (refer to Terminology).<a href="#section-7.2.2-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+<p id="section-7.2.2-3">Header parameters:<a href="#section-7.2.2-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.2.2-4.1">
+              <p id="section-7.2.2-4.1.1">Mailbox-Device-Attestation (String, Optional) - optional remote OEM device proprietary attestation data.<a href="#section-7.2.2-4.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-7.2.2-4.2">
+              <p id="section-7.2.2-4.2.1">Mailbox-Device-Claim (String, UUID, Required) - Device Claim (refer to Terminology).<a href="#section-7.2.2-4.2.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+</section>
+</div>
+<div id="consumes-1">
+<section id="section-7.2.3">
+          <h4 id="name-consumes-2">
+<a href="#section-7.2.3" class="section-number selfRef">7.2.3. </a><a href="#name-consumes-2" class="section-name selfRef">Consumes</a>
+          </h4>
+<p id="section-7.2.3-1">This API call consumes the following media types via the Content-Type request header: <code>application/json</code><a href="#section-7.2.3-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="produces-1">
+<section id="section-7.2.4">
+          <h4 id="name-produces-2">
+<a href="#section-7.2.4" class="section-number selfRef">7.2.4. </a><a href="#name-produces-2" class="section-name selfRef">Produces</a>
+          </h4>
+<p id="section-7.2.4-1">This API call produces following media types via the Content-Type request header: <code>application/json</code><a href="#section-7.2.4-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="request-body-1">
+<section id="section-7.2.5">
+          <h4 id="name-request-body-2">
+<a href="#section-7.2.5" class="section-number selfRef">7.2.5. </a><a href="#name-request-body-2" class="section-name selfRef">Request body</a>
+          </h4>
+<p id="section-7.2.5-1">Request body is a complex structure, including the following fields:<a href="#section-7.2.5-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.2.5-2.1">
+              <p id="section-7.2.5-2.1.1">payload (Object, Required) - for the purposes of Tigress API, this is a data structure, describing Provisioning Information specific to Credential Provider. It consists of the following 2 key-value pairs:<a href="#section-7.2.5-2.1.1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-7.2.5-2.1.2">
+<li id="section-7.2.5-2.1.2.1">
+                  <p id="section-7.2.5-2.1.2.1.1">"type": "AEAD_AES_128_GCM" (refer to Encryption Format section).<a href="#section-7.2.5-2.1.2.1.1" class="pilcrow">¶</a></p>
+</li>
+                <li id="section-7.2.5-2.1.2.2">
+                  <p id="section-7.2.5-2.1.2.2.1">"data": BASE64-encoded binary value of ciphertext.<a href="#section-7.2.5-2.1.2.2.1" class="pilcrow">¶</a></p>
+</li>
+              </ol>
+</li>
+            <li class="normal" id="section-7.2.5-2.2">
+              <p id="section-7.2.5-2.2.1">notificationToken (Object, Optional) - optional notification token used to notify an appropriate remote device that the mailbox data has been updated. Data structure includes the following (if notificationToken is provided it should include both fields):<a href="#section-7.2.5-2.2.1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-7.2.5-2.2.2">
+<li id="section-7.2.5-2.2.2.1">
+                  <p id="section-7.2.5-2.2.2.1.1">type (String, Required) - notification token name. Used to define which Push Notification System to be used to notify appropriate remote device of a mailbox data update. (E.g. "com.apple.apns" for APNS)<a href="#section-7.2.5-2.2.2.1.1" class="pilcrow">¶</a></p>
+</li>
+                <li id="section-7.2.5-2.2.2.2">
+                  <p id="section-7.2.5-2.2.2.2.1">tokenData (String, Required) - notification token data (data encoded based on specific device OEM notification service rules - e.g. HEX-encoded or Base64-encoded) - application-specific - refer to appropriate Push Notification System specification.<a href="#section-7.2.5-2.2.2.2.1" class="pilcrow">¶</a></p>
+</li>
+              </ol>
+</li>
+          </ul>
+<span id="name-update-mailbox-request-exam"></span><div id="update-mailbox-request">
+<figure id="figure-8">
+            <div class="alignLeft art-text artwork" id="section-7.2.5-3.1">
+<pre>
+{
+     "payload" : {
+        "type": "AEAD_AES_128_GCM",
+        "data": "FDEC...987654321"
+    },
+    "notificationToken":{
+        "type" : "com.apple.apns",
+        "tokenData" : “APNS...1234"
+    }
+}
+</pre>
+</div>
+<figcaption><a href="#figure-8" class="selfRef">Figure 8</a>:
+<a href="#name-update-mailbox-request-exam" class="selfRef">Update Mailbox Request Example</a>
+            </figcaption></figure>
+</div>
+</section>
+</div>
+<div id="responses-1">
+<section id="section-7.2.6">
+          <h4 id="name-responses-2">
+<a href="#section-7.2.6" class="section-number selfRef">7.2.6. </a><a href="#name-responses-2" class="section-name selfRef">Responses</a>
+          </h4>
+<p id="section-7.2.6-1">ResponseBody:<a href="#section-7.2.6-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.2.6-2.1">
+              <p id="section-7.2.6-2.1.1">isPushNotificationSupported (boolean, Required) - indicates whether push notification is supported or not. The device uses this field to decide whether it should listen on the push topic or do long-polling.<a href="#section-7.2.6-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+<span id="name-update-mailbox-response-exa"></span><div id="update-mailbox-response">
+<figure id="figure-9">
+            <div class="alignLeft art-text artwork" id="section-7.2.6-3.1">
+<pre>
+{
+    "isPushNotificationSupported":true
+}
+</pre>
+</div>
+<figcaption><a href="#figure-9" class="selfRef">Figure 9</a>:
+<a href="#name-update-mailbox-response-exa" class="selfRef">Update Mailbox Response Example</a>
+            </figcaption></figure>
+</div>
+<p id="section-7.2.6-4"><code>200</code>
+Status: “200” (OK)<a href="#section-7.2.6-4" class="pilcrow">¶</a></p>
+<p id="section-7.2.6-5"><code>201</code>
+Status: “201” (Created) - response to a duplicate request (duplicate "Mailbox-Request-ID"). Relay server <span class="bcp14">SHALL</span> respond to duplicate requests with 201 without performing mailbox update. "Mailbox-Request-ID" passed in the first UpdateMailbox request's header <span class="bcp14">SHALL</span> be stored by the Relay server and compared to the same value in the subsequent requests to identify duplicate requests. If duplicate is found, Relay <span class="bcp14">SHALL</span> not perform mailbox update, but respond with 201 instead.
+The value of "Mailbox-Request-ID" of the last successfully completed request <span class="bcp14">SHALL</span> be stored based on the Device Claim passed by the caller.<a href="#section-7.2.6-5" class="pilcrow">¶</a></p>
+<p id="section-7.2.6-6"><code>400</code>
+Bad Request - invalid request has been passed (can not parse or required fields missing).<a href="#section-7.2.6-6" class="pilcrow">¶</a></p>
+<p id="section-7.2.6-7"><code>401</code>
+Unauthorized - calling device is not authorized to update the mailbox. E.g. a device presented the incorrect Device Claim.<a href="#section-7.2.6-7" class="pilcrow">¶</a></p>
+<p id="section-7.2.6-8"><code>404</code>
+Not Found - mailbox with provided mailboxIdentifier not found.<a href="#section-7.2.6-8" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="deletemailbox">
+<section id="section-7.3">
+        <h3 id="name-deletemailbox">
+<a href="#section-7.3" class="section-number selfRef">7.3. </a><a href="#name-deletemailbox" class="section-name selfRef">DeleteMailbox</a>
+        </h3>
+<p id="section-7.3-1">An application running on a remote device can invoke this API on Relay Server to close the existing mailbox after it served its purpose. Recipient or Initiator Device needs to present a Device Claim in order to close the mailbox.<a href="#section-7.3-1" class="pilcrow">¶</a></p>
+<div id="endpoint-2">
+<section id="section-7.3.1">
+          <h4 id="name-endpoint-3">
+<a href="#section-7.3.1" class="section-number selfRef">7.3.1. </a><a href="#name-endpoint-3" class="section-name selfRef">Endpoint</a>
+          </h4>
+<p id="section-7.3.1-1">DELETE /{version}/m/{mailboxIdentifier}<a href="#section-7.3.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="request-parameters-2">
+<section id="section-7.3.2">
+          <h4 id="name-request-parameters-3">
+<a href="#section-7.3.2" class="section-number selfRef">7.3.2. </a><a href="#name-request-parameters-3" class="section-name selfRef">Request Parameters</a>
+          </h4>
+<p id="section-7.3.2-1">Path parameters:<a href="#section-7.3.2-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.3.2-2.1">
+              <p id="section-7.3.2-2.1.1">version (String, Required) - the version of the API. At the time of writing this document, “v1”.<a href="#section-7.3.2-2.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-7.3.2-2.2">
+              <p id="section-7.3.2-2.2.1">mailboxIdentifier(String, Required) - MailboxIdentifier (refer to Terminology).<a href="#section-7.3.2-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+<p id="section-7.3.2-3">Header parameters:<a href="#section-7.3.2-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.3.2-4.1">
+              <p id="section-7.3.2-4.1.1">Mailbox-Device-Attestation (String, Optional) - optional remote OEM device proprietary attestation data.<a href="#section-7.3.2-4.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-7.3.2-4.2">
+              <p id="section-7.3.2-4.2.1">Mailbox-Device-Claim (String, UUID, Required) - Device Claim (refer to Terminology).<a href="#section-7.3.2-4.2.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+</section>
+</div>
+<div id="responses-2">
+<section id="section-7.3.3">
+          <h4 id="name-responses-3">
+<a href="#section-7.3.3" class="section-number selfRef">7.3.3. </a><a href="#name-responses-3" class="section-name selfRef">Responses</a>
+          </h4>
+<p id="section-7.3.3-1"><code>200</code>
+Status: “200” (OK)<a href="#section-7.3.3-1" class="pilcrow">¶</a></p>
+<p id="section-7.3.3-2"><code>401</code>
+Unauthorized - calling device is not authorized to delete a mailbox. E.g. a device presented the incorrect Device Claim.<a href="#section-7.3.3-2" class="pilcrow">¶</a></p>
+<p id="section-7.3.3-3"><code>404</code>
+Not Found - mailbox with provided mailboxIdentifier not found. Relay server may respond with 404 if the Mailbox Identifier passed by the caller is invalid or mailbox has already been deleted (as a result of duplicate DeleteMailbox request).<a href="#section-7.3.3-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="readdisplayinformationfrommailbox">
+<section id="section-7.4">
+        <h3 id="name-readdisplayinformationfromm">
+<a href="#section-7.4" class="section-number selfRef">7.4. </a><a href="#name-readdisplayinformationfromm" class="section-name selfRef">ReadDisplayInformationFromMailbox</a>
+        </h3>
+<p id="section-7.4-1">An application running on a remote device can invoke this API on Relay Server to retrieve public display information content from a mailbox. Display Information shall be returned in OpenGraph format (please refer to https://ogp.me for details).
+OpenGraph-formatted display information is required to display a preview of credential in a messaging application, e.g. iMessage or WhatsApp.<a href="#section-7.4-1" class="pilcrow">¶</a></p>
+<div id="endpoint-3">
+<section id="section-7.4.1">
+          <h4 id="name-endpoint-4">
+<a href="#section-7.4.1" class="section-number selfRef">7.4.1. </a><a href="#name-endpoint-4" class="section-name selfRef">Endpoint</a>
+          </h4>
+<p id="section-7.4.1-1">GET /{version}/m/{mailboxIdentifier}<a href="#section-7.4.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="request-parameters-3">
+<section id="section-7.4.2">
+          <h4 id="name-request-parameters-4">
+<a href="#section-7.4.2" class="section-number selfRef">7.4.2. </a><a href="#name-request-parameters-4" class="section-name selfRef">Request Parameters</a>
+          </h4>
+<p id="section-7.4.2-1">Path parameters:<a href="#section-7.4.2-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.4.2-2.1">
+              <p id="section-7.4.2-2.1.1">version (String, Required)- the version of the API. At the time of writing this document, “v1”.<a href="#section-7.4.2-2.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-7.4.2-2.2">
+              <p id="section-7.4.2-2.2.1">mailboxIdentifier(String, Required) - MailboxIdentifier (refer to Terminology).<a href="#section-7.4.2-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+</section>
+</div>
+<div id="produces-2">
+<section id="section-7.4.3">
+          <h4 id="name-produces-3">
+<a href="#section-7.4.3" class="section-number selfRef">7.4.3. </a><a href="#name-produces-3" class="section-name selfRef">Produces</a>
+          </h4>
+<p id="section-7.4.3-1">This API call produces the following media types via the Content-Type response header: <code>text/html</code><a href="#section-7.4.3-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="responses-3">
+<section id="section-7.4.4">
+          <h4 id="name-responses-4">
+<a href="#section-7.4.4" class="section-number selfRef">7.4.4. </a><a href="#name-responses-4" class="section-name selfRef">Responses</a>
+          </h4>
+<p id="section-7.4.4-1"><code>200</code>
+Status: “200” (OK)<a href="#section-7.4.4-1" class="pilcrow">¶</a></p>
+<p id="section-7.4.4-2">ResponseBody :<a href="#section-7.4.4-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.4.4-3.1">
+              <p id="section-7.4.4-3.1.1">displayInformation (Object, Required) - visual representation of digital credential in OpenGraph format (please refer to https://ogp.me for details).<a href="#section-7.4.4-3.1.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+<span id="name-read-display-information-re"></span><div id="read-display-information-response">
+<figure id="figure-10">
+            <div class="alignLeft art-text artwork" id="section-7.4.4-4.1">
+<pre>
+    "&lt;html prefix="og: https://ogp.me/ns#"&gt;
+     &lt;head&gt;
+     &lt;title&gt;Hotel Pass&lt;/title&gt;
+     &lt;meta property="og:title" content="Hotel Pass" /&gt;
+     &lt;meta property="og:type" content="image/jpeg" /&gt;
+     &lt;meta property="og:description" content="Some Hotel Pass" /&gt;
+     &lt;meta property="og:url" content="share://" /&gt;
+     &lt;meta property="og:image" content="https://example.com/photos/photo.jpg" /&gt;
+     &lt;meta property="og:image:width" content="612" /&gt;
+     &lt;meta property="og:image:height" content="408" /&gt;&lt;/head&gt;
+     &lt;/html&gt;"
+</pre>
+</div>
+<figcaption><a href="#figure-10" class="selfRef">Figure 10</a>:
+<a href="#name-read-display-information-re" class="selfRef">Read Display Information Response Example</a>
+            </figcaption></figure>
+</div>
+<p id="section-7.4.4-5"><code>404</code>
+Not Found - mailbox with provided mailboxIdentifier not found.<a href="#section-7.4.4-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="readsecurecontentfrommailbox">
+<section id="section-7.5">
+        <h3 id="name-readsecurecontentfrommailbo">
+<a href="#section-7.5" class="section-number selfRef">7.5. </a><a href="#name-readsecurecontentfrommailbo" class="section-name selfRef">ReadSecureContentFromMailbox</a>
+        </h3>
+<p id="section-7.5-1">An application running on a remote device can invoke this API on Relay Server to retrieve secure payload content from a mailbox (encrypted data specific to a Provisioning Information Provider).<a href="#section-7.5-1" class="pilcrow">¶</a></p>
+<div id="endpoint-4">
+<section id="section-7.5.1">
+          <h4 id="name-endpoint-5">
+<a href="#section-7.5.1" class="section-number selfRef">7.5.1. </a><a href="#name-endpoint-5" class="section-name selfRef">Endpoint</a>
+          </h4>
+<p id="section-7.5.1-1">POST /{version}/m/{mailboxIdentifier}<a href="#section-7.5.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="request-parameters-4">
+<section id="section-7.5.2">
+          <h4 id="name-request-parameters-5">
+<a href="#section-7.5.2" class="section-number selfRef">7.5.2. </a><a href="#name-request-parameters-5" class="section-name selfRef">Request Parameters</a>
+          </h4>
+<p id="section-7.5.2-1">Path parameters:<a href="#section-7.5.2-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.5.2-2.1">
+              <p id="section-7.5.2-2.1.1">version (String, Required) - the version of the API. At the time of writing this document, “v1”.<a href="#section-7.5.2-2.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-7.5.2-2.2">
+              <p id="section-7.5.2-2.2.1">mailboxIdentifier(String, Required) - MailboxIdentifier (refer to Terminology).<a href="#section-7.5.2-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+<p id="section-7.5.2-3">Header parameters:<a href="#section-7.5.2-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.5.2-4.1">
+              <p id="section-7.5.2-4.1.1">Mailbox-Device-Attestation (String, Optional) - optional remote OEM device proprietary attestation data.<a href="#section-7.5.2-4.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-7.5.2-4.2">
+              <p id="section-7.5.2-4.2.1">MAilbox-Device-Claim (String, UUID, Required) - Device Claim (refer to Terminology).<a href="#section-7.5.2-4.2.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+</section>
+</div>
+<div id="produces-3">
+<section id="section-7.5.3">
+          <h4 id="name-produces-4">
+<a href="#section-7.5.3" class="section-number selfRef">7.5.3. </a><a href="#name-produces-4" class="section-name selfRef">Produces</a>
+          </h4>
+<p id="section-7.5.3-1">This API call produces the following media types via the Content-Type response header: <code>application/json</code><a href="#section-7.5.3-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="responses-4">
+<section id="section-7.5.4">
+          <h4 id="name-responses-5">
+<a href="#section-7.5.4" class="section-number selfRef">7.5.4. </a><a href="#name-responses-5" class="section-name selfRef">Responses</a>
+          </h4>
+<p id="section-7.5.4-1"><code>200</code>
+Status: “200” (OK)<a href="#section-7.5.4-1" class="pilcrow">¶</a></p>
+<p id="section-7.5.4-2">ResponseBody :<a href="#section-7.5.4-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.5.4-3.1">
+              <p id="section-7.5.4-3.1.1">payload (String, Required) - for the purposes of Tigress API, this is a JSON metadata blob, describing Provisioning Information specific to Credential Provider.<a href="#section-7.5.4-3.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-7.5.4-3.2">
+              <p id="section-7.5.4-3.2.1">displayInformation (Object, Required) - for the purposes of the Tigress API, this is a JSON data blob. It allows an application running on a receiving device to build a visual representation of the credential to show to user. Specific to Credential Provider.<a href="#section-7.5.4-3.2.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-7.5.4-3.3">
+              <p id="section-7.5.4-3.3.1">expiration (String, Required) - the date that the mailbox will expire. The mailbox expiration time is set during mailbox creation. Expiration time should be a complete <span>[<a href="#RFC3339" class="cite xref">RFC3339</a>]</span> date string in "YYYY-MM-DDThh:mm:ssZ" format (UTC time zone), and can be used to allow receiving clients to show when a share will expire.<a href="#section-7.5.4-3.3.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+<span id="name-read-secure-content-respons"></span><div id="read-secure-content-response">
+<figure id="figure-11">
+            <div class="alignLeft art-text artwork" id="section-7.5.4-4.1">
+<pre>
+{
+    “displayInformation" : {
+        "title" : "Hotel Pass",
+        "description" : "Some Hotel Pass",
+        "imageURL" : "https://example.com/sharingImage"
+    },
+    "payload" : {
+        "type": "AEAD_AES_128_GCM",
+        "data": "FDEC...987654321"
+    },
+    "expiration": "2021-11-03T20:32:34Z"
+}
+</pre>
+</div>
+<figcaption><a href="#figure-11" class="selfRef">Figure 11</a>:
+<a href="#name-read-secure-content-respons" class="selfRef">Read Secure Content Response Example</a>
+            </figcaption></figure>
+</div>
+<p id="section-7.5.4-5"><code>401</code>
+Unauthorized - calling device is not authorized to read the secure content of the mailbox. E.g. a device presented the incorrect Device Claim.<a href="#section-7.5.4-5" class="pilcrow">¶</a></p>
+<p id="section-7.5.4-6"><code>404</code>
+Not Found - mailbox with provided mailboxIdentifier not found.<a href="#section-7.5.4-6" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="relinquishmailbox">
+<section id="section-7.6">
+        <h3 id="name-relinquishmailbox">
+<a href="#section-7.6" class="section-number selfRef">7.6. </a><a href="#name-relinquishmailbox" class="section-name selfRef">RelinquishMailbox</a>
+        </h3>
+<p id="section-7.6-1">An application running on a remote device can invoke this API on Relay Server to relinquish their ownership of the mailbox. Recipient Device needs to present the currently established Recipient Device Claim in order to relinquish their ownership of the mailbox. Once relinquished, the mailbox can be bound to a different Recipient Device that presents its Device Claim in a ReadSecureContentFromMailbox call.<a href="#section-7.6-1" class="pilcrow">¶</a></p>
+<div id="endpoint-5">
+<section id="section-7.6.1">
+          <h4 id="name-endpoint-6">
+<a href="#section-7.6.1" class="section-number selfRef">7.6.1. </a><a href="#name-endpoint-6" class="section-name selfRef">Endpoint</a>
+          </h4>
+<p id="section-7.6.1-1">PATCH /{version}/m/{mailboxIdentifier}<a href="#section-7.6.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="request-parameters-5">
+<section id="section-7.6.2">
+          <h4 id="name-request-parameters-6">
+<a href="#section-7.6.2" class="section-number selfRef">7.6.2. </a><a href="#name-request-parameters-6" class="section-name selfRef">Request Parameters</a>
+          </h4>
+<p id="section-7.6.2-1">Path parameters:<a href="#section-7.6.2-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.6.2-2.1">
+              <p id="section-7.6.2-2.1.1">version (String, Required) - the version of the API. At the time of writing this document, “v1”.<a href="#section-7.6.2-2.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-7.6.2-2.2">
+              <p id="section-7.6.2-2.2.1">mailboxIdentifier(String, Required) - MailboxIdentifier (refer to Terminology).<a href="#section-7.6.2-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+<p id="section-7.6.2-3">Header parameters:<a href="#section-7.6.2-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.6.2-4.1">
+              <p id="section-7.6.2-4.1.1">Mailbox-Device-Attestation (String, Optional) - optional remote OEM device proprietary attestation data.<a href="#section-7.6.2-4.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-7.6.2-4.2">
+              <p id="section-7.6.2-4.2.1">Mailbox-Device-Claim (String, UUID, Required) - Device Claim (refer to Terminology).<a href="#section-7.6.2-4.2.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+</section>
+</div>
+<div id="responses-5">
+<section id="section-7.6.3">
+          <h4 id="name-responses-6">
+<a href="#section-7.6.3" class="section-number selfRef">7.6.3. </a><a href="#name-responses-6" class="section-name selfRef">Responses</a>
+          </h4>
+<p id="section-7.6.3-1"><code>200</code>
+Status: “200” (OK)<a href="#section-7.6.3-1" class="pilcrow">¶</a></p>
+<p id="section-7.6.3-2"><code>201</code>
+Status: “201” (Created) - response to a duplicate request (duplicate "Mailbox-Request-ID"). Relay server <span class="bcp14">SHALL</span> respond to duplicate requests with 201 without performing mailbox relinquish. "Mailbox-Request-ID" passed in the first RelinquishMailbox request's header <span class="bcp14">SHALL</span> be stored by the Relay server and compared to the same value in the subsequent requests to identify duplicate requests. If duplicate is found, Relay <span class="bcp14">SHALL</span> not perform mailbox relinquish, but respond with 201 instead.
+The value of "Mailbox-Request-ID" of the last successfully completed request <span class="bcp14">SHALL</span> be stored based on the Device Claim passed by the caller.<a href="#section-7.6.3-2" class="pilcrow">¶</a></p>
+<p id="section-7.6.3-3"><code>401</code>
+Unauthorized - calling device is not authorized to relinquish a mailbox. E.g. a device presented the incorrect Device Claim, or the device is not bound to the mailbox.<a href="#section-7.6.3-3" class="pilcrow">¶</a></p>
+<p id="section-7.6.3-4"><code>404</code>
+Not Found - mailbox with provided mailboxIdentifier not found. Relay server may respond with 404 if the Mailbox Identifier passed by the caller is invalid.<a href="#section-7.6.3-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="security-considerations">
+<section id="section-8">
+      <h2 id="name-security-considerations">
+<a href="#section-8" class="section-number selfRef">8. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      </h2>
+<p id="section-8-1">The following threats and mitigations have been considered:<a href="#section-8-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-8-2.1">
+          <p id="section-8-2.1.1">Initiator shares with the wrong Recipient<a href="#section-8-2.1.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-8-2.1.2.1">
+              <p id="section-8-2.1.2.1.1">Initiator <span class="bcp14">SHOULD</span> be encouraged to share Secret over a channel allowing authentication of the Recipient (e.g. voice).<a href="#section-8-2.1.2.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-8-2.1.2.2">
+              <p id="section-8-2.1.2.2.1">Verticals allow Initiator to cancel in-flight shares and delete completed shares.<a href="#section-8-2.1.2.2.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+</li>
+        <li class="normal" id="section-8-2.2">
+          <p id="section-8-2.2.1">Malicious Recipient forwards the share to 3rd party without redeeming it or the Recipient's device is compromised.<a href="#section-8-2.2.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-8-2.2.2.1">
+              <p id="section-8-2.2.2.1.1">No mitigation, the Initiator <span class="bcp14">SHOULD</span> only share with receivers they trust.<a href="#section-8-2.2.2.1.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+</li>
+        <li class="normal" id="section-8-2.3">
+          <p id="section-8-2.3.1">Share-url and secret is exposed to Recipient plus some other users.<a href="#section-8-2.3.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-8-2.3.2.1">
+              <p id="section-8-2.3.2.1.1">Verticals <span class="bcp14">SHALL</span> ensure that the Provisioning Information of a share can only be redeemed once.<a href="#section-8-2.3.2.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-8-2.3.2.2">
+              <p id="section-8-2.3.2.2.1">Relay Server <span class="bcp14">SHALL</span> ensure that only first Receiver to claim Provisioning Information gets it.<a href="#section-8-2.3.2.2.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+</li>
+        <li class="normal" id="section-8-2.4">
+          <p id="section-8-2.4.1">Network attacks<a href="#section-8-2.4.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-8-2.4.2.1">
+              <p id="section-8-2.4.2.1.1">Machine-in-the-middle:
+Relay server <span class="bcp14">SHALL</span> only allow TLS connections.
+URLs displayed to user <span class="bcp14">SHOULD</span> include the https scheme.<a href="#section-8-2.4.2.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-8-2.4.2.2">
+              <p id="section-8-2.4.2.2.1">MailboxIdentifier guessing:
+the MailboxIdentifier is a version 4 UUID <span>[<a href="#RFC4122" class="cite xref">RFC4122</a>]</span> which <span class="bcp14">SHOULD</span> contain 122-bits of cryptographic entropy, making brute-force attacks impractical.<a href="#section-8-2.4.2.2.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+</li>
+        <li class="normal" id="section-8-2.5">
+          <p id="section-8-2.5.1">Risk of hosting malicious or untrusted scripts by relay server preview page (ReadDisplayInformationFromMailbox)<a href="#section-8-2.5.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-8-2.5.2.1">
+              <p id="section-8-2.5.2.1.1">Relay server should either not allow hosting a third party JavaScripts on a preview page or implement a policy and utilize tools to maintain the trust of such scripts (e.g. force client to verify the script against a good known hash of it).<a href="#section-8-2.5.2.1.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+</li>
+      </ul>
+<div id="initiatorrecipient-privacy">
+<section id="section-8.1">
+        <h3 id="name-initiator-recipient-privacy">
+<a href="#section-8.1" class="section-number selfRef">8.1. </a><a href="#name-initiator-recipient-privacy" class="section-name selfRef">Initiator/Recipient privacy</a>
+        </h3>
+<ul class="normal">
+<li class="normal" id="section-8.1-1.1">
+            <p id="section-8.1-1.1.1">At no time Relay server <span class="bcp14">SHALL</span> store or track the identities of both Initiator and Recipient devices.<a href="#section-8.1-1.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-8.1-1.2">
+            <p id="section-8.1-1.2.1">The value of the Notification Token shall not contain information allowing the identification of the device providing it. It <span class="bcp14">SHOULD</span> also be different for every new share to prevent the Relay server from correlating different sharing.<a href="#section-8.1-1.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-8.1-1.3">
+            <p id="section-8.1-1.3.1">Notification token <span class="bcp14">SHOULD</span> only inform the corresponding device that there has been a data update on the mailbox associated to it (by Device Claim). Each device <span class="bcp14">SHOULD</span> keep track of all mailboxes associated with it and make read calls to appropriate mailboxes.<a href="#section-8.1-1.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-8.1-1.4">
+            <p id="section-8.1-1.4.1">Both Initiator and Recipient devices <span class="bcp14">SHOULD</span> store the URL of the Relay server they use for an active act of credential transfer.<a href="#section-8.1-1.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-8.1-1.5">
+            <p id="section-8.1-1.5.1">The value of Mailbox-Device-Attestation header parameter <span class="bcp14">SHALL</span> not contain information allowing the identification of the device providing it. It <span class="bcp14">SHOULD</span> also be different for every new share to prevent the Relay server from correlating different sharing.<a href="#section-8.1-1.5.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-8.1-1.6">
+            <p id="section-8.1-1.6.1">Display Information is not encrypted, therefore, it <span class="bcp14">SHOULD</span> not contain any information allowing to identify Initiator or Recipient devices.<a href="#section-8.1-1.6.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</section>
+</div>
+<div id="credentials-confidentiality-and-integrity">
+<section id="section-8.2">
+        <h3 id="name-credentials-confidentiality">
+<a href="#section-8.2" class="section-number selfRef">8.2. </a><a href="#name-credentials-confidentiality" class="section-name selfRef">Credential's confidentiality and integrity</a>
+        </h3>
+<ul class="normal">
+<li class="normal" id="section-8.2-1.1">
+            <p id="section-8.2-1.1.1">Content of the mailbox <span class="bcp14">SHALL</span> be only visible to devices having Secret.<a href="#section-8.2-1.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-8.2-1.2">
+            <p id="section-8.2-1.2.1">Relay server <span class="bcp14">MUST</span> not receive the Secret with the MailboxIdentifier at any time.<a href="#section-8.2-1.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-8.2-1.3">
+            <p id="section-8.2-1.3.1">Content of the mailbox <span class="bcp14">MUST</span> guaranty its integrity with cryptographic checksum (e.g. MAC, AES-GCM tag).<a href="#section-8.2-1.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-8.2-1.4">
+            <p id="section-8.2-1.4.1">Relay server <span class="bcp14">SHALL</span> periodically check and delete expired mailboxes ( refer to expiration parameter in the CreateMailbox request).<a href="#section-8.2-1.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-8.2-1.5">
+            <p id="section-8.2-1.5.1">It is recommended that URL and secret are send separately. But if the Initiator sends both URL and the Secret as a single URL, Secret <span class="bcp14">MUST</span> be appended as URI fragment <span>[<a href="#RFC3986" class="cite xref">RFC3986</a>]</span>.  Recipient Device, upon receipt of such URL, <span class="bcp14">MUST</span> remove the Fragment (Secret) before calling the Relay server API.<a href="#section-8.2-1.5.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<span id="name-example-of-url-with-secret-"></span><div id="link-with-fragment">
+<figure id="figure-12">
+          <div class="alignLeft art-text artwork" id="section-8.2-2.1">
+<pre>
+“https://relayserver.example.com/v1/m/{mailboxIdentifier}#{Secret}”
+</pre>
+</div>
+<figcaption><a href="#figure-12" class="selfRef">Figure 12</a>:
+<a href="#name-example-of-url-with-secret-" class="selfRef">Example of URL with Secret as URI Fragment</a>
+          </figcaption></figure>
+</div>
+</section>
+</div>
+<div id="second-factor-authentication-for-recipient-credential-provisioning">
+<section id="section-8.3">
+        <h3 id="name-second-factor-authenticatio">
+<a href="#section-8.3" class="section-number selfRef">8.3. </a><a href="#name-second-factor-authenticatio" class="section-name selfRef">Second factor authentication for Recipient Credential Provisioning</a>
+        </h3>
+<ul class="normal">
+<li class="normal" id="section-8.3-1.1">
+            <p id="section-8.3-1.1.1">Vertical determines need of a second factor to Provision Credential on Recipient device. This determination is done on the basis of known security properties of the communication method used to send the invitation.<a href="#section-8.3-1.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-8.3-1.2">
+            <p id="section-8.3-1.2.1">Verticals can use PIN codes, presence of Initiator Credential or other mechanisms as second factor.<a href="#section-8.3-1.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-8.3-1.3">
+            <p id="section-8.3-1.3.1">Details of the second factor and policies around use of the second factor is out of scope of this document.<a href="#section-8.3-1.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</section>
+</div>
+</section>
+</div>
+<div id="iana-considerations">
+<section id="section-9">
+      <h2 id="name-iana-considerations">
+<a href="#section-9" class="section-number selfRef">9. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+      </h2>
+<p id="section-9-1">This document registers new headers, "Mailbox-Request-ID", "Mailbox-Device-Claim" and "Mailbox-Device-Attestation"
+in the "Permanent Message Header Field Names" &lt;<span><a href="https://www.iana.org/assignments/message-headers">https://www.iana.org/assignments/message-headers</a></span>&gt;.<a href="#section-9-1" class="pilcrow">¶</a></p>
+<span id="name-registered-http-header"></span><div id="iana-header-type-table">
+<figure id="figure-13">
+        <div class="alignLeft art-text artwork" id="section-9-2.1">
+<pre>
+    +----------------------------+----------+--------+---------------+
+    | Header Field Name          | Protocol | Status |   Reference   |
+    +----------------------------+----------+--------+---------------+
+    | Mailbox-Request-ID         |   http   |  std   | This document |
+    | Mailbox-Device-Claim       |   http   |  std   | This document |
+    | Mailbox-Device-Attestation |   http   |  std   | This document |
+    +----------------------------+----------+--------+---------------+
+</pre>
+</div>
+<figcaption><a href="#figure-13" class="selfRef">Figure 13</a>:
+<a href="#name-registered-http-header" class="selfRef">Registered HTTP Header</a>
+        </figcaption></figure>
+</div>
+</section>
+</div>
+<section id="section-10">
+      <h2 id="name-references">
+<a href="#section-10" class="section-number selfRef">10. </a><a href="#name-references" class="section-name selfRef">References</a>
+      </h2>
+<div id="sec-normative-references">
+<section id="section-10.1">
+        <h3 id="name-normative-references">
+<a href="#section-10.1" class="section-number selfRef">10.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
+        </h3>
+<dl class="references">
+<dt id="CCC-Digital-Key-30">[CCC-Digital-Key-30]</dt>
+        <dd>
+<span class="refAuthor">Car Connectivity Consortium</span>, <span class="refTitle">"Digital Key Release 3"</span>, <time datetime="2022-07" class="refDate">July 2022</time>, <span>&lt;<a href="https://carconnectivity.org/download-digital-key-3-specification/">https://carconnectivity.org/download-digital-key-3-specification/</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="ISO-18013-5">[ISO-18013-5]</dt>
+        <dd>
+<span class="refAuthor">Cards and security devices for personal identification</span>, <span class="refTitle">"Personal identification — ISO-compliant driving licence — Part 5: Mobile driving licence (mDL) application"</span>, <time datetime="2021-09" class="refDate">September 2021</time>, <span>&lt;<a href="https://www.iso.org/standard/69084.html">https://www.iso.org/standard/69084.html</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC2119">[RFC2119]</dt>
+        <dd>
+<span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2119">https://www.rfc-editor.org/rfc/rfc2119</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC3339">[RFC3339]</dt>
+        <dd>
+<span class="refAuthor">Klyne, G.</span> and <span class="refAuthor">C. Newman</span>, <span class="refTitle">"Date and Time on the Internet: Timestamps"</span>, <span class="seriesInfo">RFC 3339</span>, <span class="seriesInfo">DOI 10.17487/RFC3339</span>, <time datetime="2002-07" class="refDate">July 2002</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc3339">https://www.rfc-editor.org/rfc/rfc3339</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC3986">[RFC3986]</dt>
+        <dd>
+<span class="refAuthor">Berners-Lee, T.</span>, <span class="refAuthor">Fielding, R.</span>, and <span class="refAuthor">L. Masinter</span>, <span class="refTitle">"Uniform Resource Identifier (URI): Generic Syntax"</span>, <span class="seriesInfo">STD 66</span>, <span class="seriesInfo">RFC 3986</span>, <span class="seriesInfo">DOI 10.17487/RFC3986</span>, <time datetime="2005-01" class="refDate">January 2005</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc3986">https://www.rfc-editor.org/rfc/rfc3986</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC4122">[RFC4122]</dt>
+        <dd>
+<span class="refAuthor">Leach, P.</span>, <span class="refAuthor">Mealling, M.</span>, and <span class="refAuthor">R. Salz</span>, <span class="refTitle">"A Universally Unique IDentifier (UUID) URN Namespace"</span>, <span class="seriesInfo">RFC 4122</span>, <span class="seriesInfo">DOI 10.17487/RFC4122</span>, <time datetime="2005-07" class="refDate">July 2005</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc4122">https://www.rfc-editor.org/rfc/rfc4122</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC5116">[RFC5116]</dt>
+        <dd>
+<span class="refAuthor">McGrew, D.</span>, <span class="refTitle">"An Interface and Algorithms for Authenticated Encryption"</span>, <span class="seriesInfo">RFC 5116</span>, <span class="seriesInfo">DOI 10.17487/RFC5116</span>, <time datetime="2008-01" class="refDate">January 2008</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc5116">https://www.rfc-editor.org/rfc/rfc5116</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8174">[RFC8174]</dt>
+      <dd>
+<span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05" class="refDate">May 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8174">https://www.rfc-editor.org/rfc/rfc8174</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</div>
+<div id="sec-informative-references">
+<section id="section-10.2">
+        <h3 id="name-informative-references">
+<a href="#section-10.2" class="section-number selfRef">10.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+        </h3>
+<dl class="references">
+<dt id="RFC2818">[RFC2818]</dt>
+        <dd>
+<span class="refAuthor">Rescorla, E.</span>, <span class="refTitle">"HTTP Over TLS"</span>, <span class="seriesInfo">RFC 2818</span>, <span class="seriesInfo">DOI 10.17487/RFC2818</span>, <time datetime="2000-05" class="refDate">May 2000</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2818">https://www.rfc-editor.org/rfc/rfc2818</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="Tigress-req-00">[Tigress-req-00]</dt>
+      <dd>
+<span class="refAuthor">Vinokurov, D.</span>, <span class="refAuthor">Pelletier, A.</span>, <span class="refAuthor">Astiz, C.</span>, <span class="refAuthor">Karandikar, Y.</span>, and <span class="refAuthor">B. Lassey</span>, <span class="refTitle">"Tigress requirements"</span>, <time datetime="2023-04" class="refDate">April 2023</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/draft-ietf-tigress-requirements/">https://datatracker.ietf.org/doc/draft-ietf-tigress-requirements/</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</div>
+</section>
+<div id="contributors">
+<section id="appendix-A">
+      <h2 id="name-contributors">
+<a href="#appendix-A" class="section-number selfRef">Appendix A. </a><a href="#name-contributors" class="section-name selfRef">Contributors</a>
+      </h2>
+<p id="appendix-A-1">The following people provided substantive contributions to this document:<a href="#appendix-A-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="appendix-A-2.1">
+          <p id="appendix-A-2.1.1">Ben Chester<a href="#appendix-A-2.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-A-2.2">
+          <p id="appendix-A-2.2.1">Casey Astiz<a href="#appendix-A-2.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-A-2.3">
+          <p id="appendix-A-2.3.1">Jean-Luc Giraud<a href="#appendix-A-2.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-A-2.4">
+          <p id="appendix-A-2.4.1">Matt Byington<a href="#appendix-A-2.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-A-2.5">
+          <p id="appendix-A-2.5.1">Alexey Bulgakov<a href="#appendix-A-2.5.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-A-2.6">
+          <p id="appendix-A-2.6.1">Tommy Pauly<a href="#appendix-A-2.6.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-A-2.7">
+          <p id="appendix-A-2.7.1">Crystal Qin<a href="#appendix-A-2.7.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-A-2.8">
+          <p id="appendix-A-2.8.1">Adam Bar-Niv<a href="#appendix-A-2.8.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-A-2.9">
+          <p id="appendix-A-2.9.1">Manuel Gerster<a href="#appendix-A-2.9.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-A-2.10">
+          <p id="appendix-A-2.10.1">Igor Gariev<a href="#appendix-A-2.10.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+</section>
+</div>
+<div id="acknowledgments">
+<section id="appendix-B">
+      <h2 id="name-acknowledgments">
+<a href="#appendix-B" class="section-number selfRef">Appendix B. </a><a href="#name-acknowledgments" class="section-name selfRef">Acknowledgments</a>
+      </h2>
+<p id="appendix-B-1">TODO acknowledge.<a href="#appendix-B-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="authors-addresses">
+<section id="appendix-C">
+      <h2 id="name-authors-addresses">
+<a href="#name-authors-addresses" class="section-name selfRef">Authors' Addresses</a>
+      </h2>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Dmitry Vinokurov</span></div>
+<div dir="auto" class="left"><span class="org">Apple Inc</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:dvinokurov@apple.com" class="email">dvinokurov@apple.com</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Yogesh Karandikar</span></div>
+<div dir="auto" class="left"><span class="org">Apple Inc</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:ykarandikar@apple.com" class="email">ykarandikar@apple.com</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Matthias Lerch</span></div>
+<div dir="auto" class="left"><span class="org">Apple Inc</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:mlerch@apple.com" class="email">mlerch@apple.com</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Alex Pelletier</span></div>
+<div dir="auto" class="left"><span class="org">Apple Inc</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:a_pelletier@apple.com" class="email">a_pelletier@apple.com</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Nick Sha</span></div>
+<div dir="auto" class="left"><span class="org">Alphabet Inc</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:nicksha@google.com" class="email">nicksha@google.com</a>
+</div>
+</address>
+</section>
+</div>
+<script>const toc = document.getElementById("toc");
+toc.querySelector("h2").addEventListener("click", e => {
+  toc.classList.toggle("active");
+});
+toc.querySelector("nav").addEventListener("click", e => {
+  toc.classList.remove("active");
+});
+</script>
+</body>
+</html>

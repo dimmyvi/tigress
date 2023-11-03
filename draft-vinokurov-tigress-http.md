@@ -556,7 +556,7 @@ ResponseBody:
     "isPushNotificationSupported":true
 }
 ~~~
-{: #update-mailbox-response title="Create Mailbox Response Example"}
+{: #update-mailbox-response title="Update Mailbox Response Example"}
 
 `200`
 Status: “200” (OK)

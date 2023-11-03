@@ -1,7 +1,7 @@
 ---
 title: "Transfer Digital Credentials Securely"
 abbrev: "Tigress"
-docname: draft-art-tigress-latest
+docname: draft-vinokurov-tigress-http-latest
 submissiontype: IETF
 category: std
 
@@ -17,7 +17,7 @@ venue:
   mail: "tigress@ietf.org"
   arch: "https://mailarchive.ietf.org/arch/browse/tigress/"
   github: "dimmyvi/tigress"
-  latest: "https://datatracker.ietf.org/doc/draft-art-tigress/"
+  latest: "https://datatracker.ietf.org/doc/draft-vinokurov-tigress-http/"
 
 stand_alone: yes
 smart_quotes: no
@@ -69,7 +69,7 @@ normative:
     target: https://www.iso.org/standard/69084.html
 
 informative:
-  Tigress-req-03:
+  Tigress-req-00:
     author:
      -
       ins: D. Vinokurov
@@ -90,7 +90,7 @@ informative:
 
     title: "Tigress requirements"
     date: 2023-04
-    target: https://github.com/dimmyvi/tigress-requirements/
+    target: https://datatracker.ietf.org/doc/draft-ietf-tigress-requirements/
 
 --- abstract
 

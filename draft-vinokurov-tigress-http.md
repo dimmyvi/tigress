@@ -401,6 +401,7 @@ Header parameters
 
 - Mailbox-Device-Attestation (String, Optional) - optional remote OEM device proprietary attestation data.
 - Mailbox-Device-Claim (String, UUID, Required) - Device Claim (refer to Terminology).
+- Mailbox-Request-ID (String, UUID, Required) - Unique request identifier.
 
 ### Consumes
 
@@ -510,6 +511,7 @@ Header parameters:
 
 - Mailbox-Device-Attestation (String, Optional) - optional remote OEM device proprietary attestation data.
 - Mailbox-Device-Claim (String, UUID, Required) - Device Claim (refer to Terminology).
+- Mailbox-Request-ID (String, UUID, Required) - Unique request identifier.
 
 ### Consumes
 
@@ -592,9 +594,9 @@ Path parameters:
 
 Header parameters:
 
-- Mailbox-Device-Attestation (String, Optional) - optional remote OEM device proprietary attestation data.
 - Mailbox-Device-Claim (String, UUID, Required) - Device Claim (refer to Terminology).
-
+- Mailbox-Request-ID (String, UUID, Required) - Unique request identifier.
+- 
 ### Responses
 
 `200`
@@ -672,9 +674,8 @@ Path parameters:
 
 Header parameters:
 
-- Mailbox-Device-Attestation (String, Optional) - optional remote OEM device proprietary attestation data.
 - MAilbox-Device-Claim (String, UUID, Required) - Device Claim (refer to Terminology).
-
+  
 ### Produces
 
 This API call produces the following media types via the Content-Type response header: `application/json`
@@ -730,8 +731,8 @@ Path parameters:
 
 Header parameters:
 
-- Mailbox-Device-Attestation (String, Optional) - optional remote OEM device proprietary attestation data.
 - Mailbox-Device-Claim (String, UUID, Required) - Device Claim (refer to Terminology).
+- Mailbox-Request-ID (String, UUID, Required) - Unique request identifier.
 
 ### Responses
 

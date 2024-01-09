@@ -596,7 +596,7 @@ Header parameters:
 
 - Mailbox-Device-Claim (String, UUID, Required) - Device Claim (refer to Terminology).
 - Mailbox-Request-ID (String, UUID, Required) - Unique request identifier.
-- 
+
 ### Responses
 
 `200`
@@ -675,7 +675,7 @@ Path parameters:
 Header parameters:
 
 - MAilbox-Device-Claim (String, UUID, Required) - Device Claim (refer to Terminology).
-  
+
 ### Produces
 
 This API call produces the following media types via the Content-Type response header: `application/json`
